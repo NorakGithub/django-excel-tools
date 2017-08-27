@@ -45,9 +45,10 @@ class BaseField(object):
 
 class DigitBaseField(BaseField):
 
-    def __init__(self, verbose_name, convert_str=True, blank=False):
+    def __init__(self, verbose_name, default, convert_str=True, blank=False):
         super(DigitBaseField, self).__init__(verbose_name, blank)
         self.convert_str = convert_str
+        self.default = default
 
 
 class BaseDateTimeField(BaseField):
