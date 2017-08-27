@@ -6,14 +6,14 @@ BASE_MESSAGE = '[Row {index}] {verbose_name} {message}'
 
 class BaseField(object):
 
-    def __init__(self, verbose_name, allow_blank=False):
+    def __init__(self, verbose_name, blank=False):
         self.verbose_name = verbose_name
-        self.allow_blank = allow_blank
+        self.blank = blank
         self.value = None
         self.cleaned_value = None
 
     def validate(self, index):
-        if not self.allow_blank and not self.value:
+        if not self.blank and not self.value:
             raise ValidationError(message=BASE_MESSAGE.format(
                 index=index,
                 verbose_name=self.verbose_name,
@@ -43,14 +43,14 @@ class BaseField(object):
 
 class DigitBaseField(BaseField):
 
-    def __init__(self, verbose_name, convert_str=True, allow_blank=False):
-        super(DigitBaseField, self).__init__(verbose_name, allow_blank)
+    def __init__(self, verbose_name, convert_str=True, blank=False):
+        super(DigitBaseField, self).__init__(verbose_name, blank)
         self.convert_str = convert_str
 
 
 class BaseDateTimeField(BaseField):
 
-    def __init__(self, date_format, date_format_verbose, verbose_name, allow_blank=False):
-        super(BaseDateTimeField, self).__init__(verbose_name, allow_blank)
+    def __init__(self, date_format, date_format_verbose, verbose_name, blank=False):
+        super(BaseDateTimeField, self).__init__(verbose_name, blank)
         self.date_format = date_format
         self.date_format_verbose = date_format_verbose

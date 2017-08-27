@@ -95,8 +95,8 @@ class ExcelSerializer(BaseSerializer):
 
 class CharField(BaseField):
 
-    def __init__(self, max_length, verbose_name, convert_number=False, allow_blank=False):
-        super(CharField, self).__init__(verbose_name, allow_blank)
+    def __init__(self, max_length, verbose_name, convert_number=False, blank=False):
+        super(CharField, self).__init__(verbose_name, blank)
         self.max_length = max_length
         self.convert_number = convert_number
 
