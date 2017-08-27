@@ -1,5 +1,5 @@
 ==================
-Python Excel Tools
+Django Excel Tools
 ==================
 
 
@@ -12,10 +12,6 @@ Python Excel Tools
 .. image:: https://readthedocs.org/projects/python-excel-tools/badge/?version=latest
         :target: https://python-excel-tools.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
-
-.. image:: https://pyup.io/repos/github/NorakGithub/python_excel_tools/shield.svg
-     :target: https://pyup.io/repos/github/NorakGithub/python_excel_tools/
-     :alt: Updates
 
 
 Common function when working with excel.
