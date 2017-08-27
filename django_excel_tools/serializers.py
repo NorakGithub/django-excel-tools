@@ -10,7 +10,8 @@ from .fields import BaseField, BASE_MESSAGE, DigitBaseField, BaseDateTimeField
 
 class BaseSerializer(object):
 
-    def __init__(self, worksheet):
+    def __init__(self, worksheet, **kwargs):
+        self.kwargs = kwargs
         self._class_meta_validation()
 
         self.class_fields = [field for field in dir(self)
@@ -141,6 +142,9 @@ class IntegerField(DigitBaseField):
                     verbose_name=self.verbose_name,
                     message='cannot convert {} to number.'.format(value)
                 ))
+
+        elif self.default:
+            value = self.default
 
         self._data_type_validation_helper(
             index=index,
