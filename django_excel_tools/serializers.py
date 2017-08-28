@@ -4,6 +4,8 @@ from collections import OrderedDict
 
 import datetime
 
+import sys
+
 from .exceptions import ValidationError, ColumnNotEqualError, FieldNotExist
 from .fields import BaseField, BASE_MESSAGE, DigitBaseField, BaseDateTimeField
 
@@ -116,14 +118,20 @@ class CharField(BaseField):
 
         value = self.value
         if self.convert_number:
-            value = str(value)
+            value = str(value).strip()
 
-        if type(value) is not str and type(value) is not unicode:
-            raise ValidationError(message=BASE_MESSAGE.format(
-                index=index,
-                verbose_name=self.verbose_name,
-                message='must be text.'
-            ))
+        type_error_message = BASE_MESSAGE.format(
+            index=index,
+            verbose_name=self.verbose_name,
+            message='must be text.'
+        )
+
+        if sys.version_info >= (3, 0):
+            if type(value) is not str:
+                raise ValidationError(message=type_error_message)
+        else:
+            if type(value) is not str and type(value) is not unicode:
+                raise ValidationError(message=type_error_message)
 
         if len(value) > self.max_length:
             raise ValidationError(message=BASE_MESSAGE.format(
@@ -141,7 +149,7 @@ class IntegerField(DigitBaseField):
         super(IntegerField, self).data_type_validate(index)
 
         value = self.value
-        if self.convert_str:
+        if self.convert_str and type(value) is not int and not self.blank:
             try:
                 value = int(value)
             except ValueError:
@@ -170,17 +178,26 @@ class DateField(BaseDateTimeField):
         super(DateField, self).data_type_validate(index)
 
         value = self.value
-        if type(value) is str or type(value) is unicode:
-            try:
-                date = datetime.datetime.strptime(value, self.date_format).date()
-                value = date
-            except ValueError:
-                raise ValidationError(message=BASE_MESSAGE.format(
+        type_error_message = BASE_MESSAGE.format(
                     index=index,
                     verbose_name=self.verbose_name,
                     message='"{}" is incorrect format, it should be "{}".'.format(value, self.date_format_verbose)
-                ))
-        elif type(value) is datetime.datetime:
+                )
+
+        def convert_date():
+            try:
+                return datetime.datetime.strptime(value, self.date_format).date()
+            except ValueError:
+                raise ValidationError(message=type_error_message)
+
+        if sys.version_info >= (3, 0):
+            if type(value) is str:
+                convert_date()
+        else:
+            if type(value) is str or type(value) is unicode:
+                convert_date()
+
+        if type(value) is datetime.datetime:
             value = value.date()
 
         self._data_type_validation_helper(
@@ -199,16 +216,24 @@ class DateTimeField(BaseDateTimeField):
         super(DateTimeField, self).data_type_validate(index)
 
         value = self.value
-        if type(value) is str or type(value) is unicode:
+        type_error_message = BASE_MESSAGE.format(
+                        index=index,
+                        verbose_name=self.verbose_name,
+                        message='"{}" is incorrect format, it should be "{}"'.format(value, self.date_format_verbose)
+                    )
+
+        def convert_date_time():
             try:
-                time = datetime.datetime.strptime(value, self.date_format)
-                value = time
+                return datetime.datetime.strptime(value, self.date_format)
             except ValueError:
-                raise ValidationError(message=BASE_MESSAGE.format(
-                    index=index,
-                    verbose_name=self.verbose_name,
-                    message='"{}" is incorrect format, it should be "{}"'.format(value, self.date_format_verbose)
-                ))
+                raise ValidationError(message=type_error_message)
+
+        if sys.version_info >= (3, 0):
+            if type(value) is str:
+                convert_date_time()
+        else:
+            if type(value) is str or type(value) is unicode:
+                convert_date_time()
 
         self._data_type_validation_helper(
             index=index,
