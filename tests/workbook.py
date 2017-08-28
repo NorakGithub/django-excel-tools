@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import datetime
 from openpyxl import Workbook
 
@@ -7,6 +9,8 @@ from django_excel_tools import serializers
 
 # Example Usage
 class OrderExcelSerializer(serializers.ExcelSerializer):
+    QR_SCANNED_CHOICES = (u'有', u'無')
+
     shop_name = serializers.CharField(max_length=100, verbose_name='Shop Name')
     order_number = serializers.CharField(max_length=100, verbose_name='Order Number')
     quantity = serializers.IntegerField(verbose_name='Quantity')
@@ -20,6 +24,7 @@ class OrderExcelSerializer(serializers.ExcelSerializer):
         verbose_name='Expired Date', date_format='%Y%m', date_format_verbose='YYYYMM'
     )
     weight = serializers.IntegerField(verbose_name='Weight', blank=True)
+    qr_scanned = serializers.CharField(max_length=2, verbose_name='QR Scanned', choices=QR_SCANNED_CHOICES)
 
     class Meta:
         start_index = 1
@@ -30,7 +35,8 @@ class OrderExcelSerializer(serializers.ExcelSerializer):
             'quantity',
             'inspection_expired_date',
             'registered_date',
-            'weight'
+            'weight',
+            'qr_scanned'
         )
 
     def validated(self, cleaned_data):
@@ -56,6 +62,7 @@ class WorkbookTesting(object):
         self.worksheet['E1'] = 'Inspection Expired Date'
         self.worksheet['F1'] = 'Registered Date'
         self.worksheet['G1'] = 'Weight'
+        self.worksheet['H1'] = 'QR Scanned'
 
     def _generate_data(self):
         self.worksheet['A2'] = 'Shop A'
@@ -65,6 +72,7 @@ class WorkbookTesting(object):
         self.worksheet['E2'] = '20180101'
         self.worksheet['F2'] = '201801'
         self.worksheet['G2'] = None
+        self.worksheet['H2'] = 'T'
 
         self.worksheet['A3'] = 'Shop B'
         self.worksheet['B3'] = '170707-001-00000-1'
@@ -72,4 +80,4 @@ class WorkbookTesting(object):
         self.worksheet['D3'] = 1000
         self.worksheet['E3'] = datetime.date(2017, 1, 1)
         self.worksheet['F3'] = '201802'
-        self.worksheet['G3'] = '1000'
+        self.worksheet['H3'] = u'無'
