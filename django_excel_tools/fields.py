@@ -22,7 +22,8 @@ class BaseField(object):
                 message='is not allow to be blank.')
             )
 
-        self.data_type_validate(index)
+        if self.value:
+            self.data_type_validate(index)
 
     def data_type_validate(self, index):
         if type(self.value) is str:
