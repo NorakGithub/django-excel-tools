@@ -29,7 +29,7 @@ class BaseField(object):
             self.value = self.value.strip()
 
     def _data_type_validation_helper(self, index, value, data_type, error_message):
-        if type(value) is not data_type:
+        if type(value) is not data_type and not self.blank:
             raise ValidationError(message=BASE_MESSAGE.format(
                 index=index,
                 verbose_name=self.verbose_name,
