@@ -64,5 +64,5 @@
       <textMaps />
     </LinkMapSettings>
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.6.0 virtualenv at ~/.pyenv/versions/cmoc-web" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 2.7.11 virtualenv at ~/.pyenv/versions/python-excel-tools" project-jdk-type="Python SDK" />
 </project>
