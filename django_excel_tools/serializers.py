@@ -108,17 +108,21 @@ class ExcelSerializer(BaseSerializer):
 
 class CharField(BaseField):
 
-    def __init__(self, max_length, verbose_name, convert_number=True, blank=False):
+    def __init__(self, max_length, verbose_name, convert_number=True, blank=False, choices=None):
         super(CharField, self).__init__(verbose_name, blank)
         self.max_length = max_length
         self.convert_number = convert_number
+        self.choices = choices
 
     def data_type_validate(self, index):
         super(CharField, self).data_type_validate(index)
 
         value = self.value
         if self.convert_number:
-            value = str(value).strip()
+            if sys.version_info >= (3, 0):
+                value = str(value).strip()
+            else:
+                value = unicode(value).strip()
 
         type_error_message = BASE_MESSAGE.format(
             index=index,
@@ -139,6 +143,9 @@ class CharField(BaseField):
                 verbose_name=self.verbose_name,
                 message='cannot be more than {} characters.'.format(self.max_length)
             ))
+
+        if self.choices:
+            self._choice_validation_helper(index, value, self.choices)
 
         self.cleaned_value = value
 
@@ -168,6 +175,9 @@ class IntegerField(DigitBaseField):
             data_type=int,
             error_message='expected type is number but received {}.'.format(type(value).__name__)
         )
+
+        if self.choices:
+            self._choice_validation_helper(index, value, self.choices)
 
         self.cleaned_value = value
 
