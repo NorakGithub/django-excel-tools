@@ -76,7 +76,15 @@ class BaseSerializer(object):
     def _set_cleaned_values(self, validated_fields):
         cleaned_row = {}
         for key in validated_fields:
-            cleaned_row[key] = validated_fields[key].cleaned_value
+            cleaned_value = validated_fields[key].cleaned_value
+            try:
+                extra_clean = 'extra_clean_{}'.format(key)
+                extra_clean_def = getattr(self, extra_clean)
+                if callable(extra_clean_def):
+                    cleaned_value = extra_clean_def(cleaned_value)
+            except AttributeError:
+                pass
+            cleaned_row[key] = cleaned_value
         self.cleaned_data.append(cleaned_row)
 
 
