@@ -19,6 +19,7 @@ class OrderExcelSerializer(serializers.ExcelSerializer):
     registered_date = serializers.DateField(
         verbose_name='Expired Date', date_format='%Y%m', date_format_verbose='YYYYMM'
     )
+    weight = serializers.IntegerField(verbose_name='Weight', blank=True)
 
     class Meta:
         start_index = 1
@@ -28,7 +29,8 @@ class OrderExcelSerializer(serializers.ExcelSerializer):
             'sale_datetime',
             'quantity',
             'inspection_expired_date',
-            'registered_date'
+            'registered_date',
+            'weight'
         )
 
     def validated(self, cleaned_data):
@@ -53,6 +55,7 @@ class WorkbookTesting(object):
         self.worksheet['D1'] = 'Quantity'
         self.worksheet['E1'] = 'Inspection Expired Date'
         self.worksheet['F1'] = 'Registered Date'
+        self.worksheet['G1'] = 'Weight'
 
     def _generate_data(self):
         self.worksheet['A2'] = 'Shop A'
@@ -61,6 +64,7 @@ class WorkbookTesting(object):
         self.worksheet['D2'] = 100
         self.worksheet['E2'] = '20180101'
         self.worksheet['F2'] = '201801'
+        self.worksheet['G2'] = None
 
         self.worksheet['A3'] = 'Shop B'
         self.worksheet['B3'] = '170707-001-00000-1'
@@ -68,3 +72,4 @@ class WorkbookTesting(object):
         self.worksheet['D3'] = 1000
         self.worksheet['E3'] = datetime.date(2017, 1, 1)
         self.worksheet['F3'] = '201802'
+        self.worksheet['G3'] = '1000'
