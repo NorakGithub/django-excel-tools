@@ -15,3 +15,7 @@ class ColumnNotEqualError(BaseExcelError):
 
 class FieldNotExist(BaseExcelError):
     pass
+
+
+class SerializerConfigError(BaseExcelError):
+    pass
