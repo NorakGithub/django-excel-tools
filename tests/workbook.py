@@ -39,12 +39,6 @@ class OrderExcelSerializer(serializers.ExcelSerializer):
             'qr_scanned'
         )
 
-    def validated(self, cleaned_data):
-        pass
-
-    def invalided(self, errors):
-        pass
-
 
 class WorkbookTesting(object):
 

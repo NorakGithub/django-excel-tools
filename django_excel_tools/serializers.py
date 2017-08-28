@@ -92,18 +92,11 @@ class BaseSerializer(object):
 
 class ExcelSerializer(BaseSerializer):
 
+    def import_operation(self):
+        pass
+
     def is_valid(self):
-        if self.errors:
-            self.invalided(self.errors)
-        self.validated(self.cleaned_data)
-
         return False if self.errors else True
-
-    def validated(self, cleaned_data):
-        pass
-
-    def invalided(self, errors):
-        pass
 
 
 class CharField(BaseField):
