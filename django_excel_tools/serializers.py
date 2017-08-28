@@ -149,7 +149,7 @@ class IntegerField(DigitBaseField):
         super(IntegerField, self).data_type_validate(index)
 
         value = self.value
-        if self.convert_str and type(value) is not int and not self.blank:
+        if self.convert_str and type(value) is not int:
             try:
                 value = int(value)
             except ValueError:
@@ -192,10 +192,10 @@ class DateField(BaseDateTimeField):
 
         if sys.version_info >= (3, 0):
             if type(value) is str:
-                convert_date()
+                value = convert_date()
         else:
             if type(value) is str or type(value) is unicode:
-                convert_date()
+                value = convert_date()
 
         if type(value) is datetime.datetime:
             value = value.date()
@@ -230,10 +230,10 @@ class DateTimeField(BaseDateTimeField):
 
         if sys.version_info >= (3, 0):
             if type(value) is str:
-                convert_date_time()
+                value = convert_date_time()
         else:
             if type(value) is str or type(value) is unicode:
-                convert_date_time()
+                value = convert_date_time()
 
         self._data_type_validation_helper(
             index=index,
