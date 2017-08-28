@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from .exceptions import ValidationError
+from .exceptions import ValidationError, SerializerConfigError
 
-
-BASE_MESSAGE = '[Row {index}] {verbose_name} {message}'
+BASE_MESSAGE = u'[Row {index}] {verbose_name} {message}'
 
 
 class BaseField(object):
@@ -37,6 +36,19 @@ class BaseField(object):
                 message=error_message
             ))
 
+    def _choice_validation_helper(self, index, value, choices):
+        # Check if choices has duplication
+        if len(choices) != len(set(choices)):
+            raise SerializerConfigError(message='Choice has duplication.')
+
+        if value not in choices:
+            choices = u', '.join(choices)
+            raise ValidationError(message=BASE_MESSAGE.format(
+                index=index,
+                verbose_name=self.verbose_name,
+                message=u'{} is not correct, it must has one of these {}.'.format(value, choices)
+            ))
+
     def __repr__(self):
         return '<{}- {}>'.format(self.__class__.__name__, str(self))
 
@@ -46,10 +58,11 @@ class BaseField(object):
 
 class DigitBaseField(BaseField):
 
-    def __init__(self, verbose_name, default=None, convert_str=True, blank=False):
+    def __init__(self, verbose_name, default=None, convert_str=True, blank=False, choices=None):
         super(DigitBaseField, self).__init__(verbose_name, blank)
         self.convert_str = convert_str
         self.default = default
+        self.choices = choices
 
 
 class BaseDateTimeField(BaseField):
