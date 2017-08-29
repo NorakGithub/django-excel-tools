@@ -6,8 +6,8 @@ Django Excel Tools
 .. image:: https://img.shields.io/pypi/v/python_excel_tools.svg
         :target: https://pypi.python.org/pypi/python_excel_tools
 
-.. image:: https://img.shields.io/travis/NorakGithub/python_excel_tools.svg
-        :target: https://travis-ci.org/NorakGithub/python_excel_tools
+.. image:: https://travis-ci.org/NorakGithub/django-excel-tools.svg?branch=master
+        :target: https://travis-ci.org/NorakGithub/django-excel-tools
 
 .. image:: https://readthedocs.org/projects/python-excel-tools/badge/?version=latest
         :target: https://python-excel-tools.readthedocs.io/en/latest/?badge=latest
