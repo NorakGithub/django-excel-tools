@@ -7,9 +7,10 @@ BASE_MESSAGE = u'[Row {index}] {verbose_name} {message}'
 
 class BaseField(object):
 
-    def __init__(self, verbose_name, blank=False):
+    def __init__(self, verbose_name, blank=False, default=None):
         self.verbose_name = verbose_name
         self.blank = blank
+        self.default = default
         self.value = None
         self.cleaned_value = None
 
@@ -23,6 +24,8 @@ class BaseField(object):
 
         if self.value:
             self.data_type_validate(index)
+        elif self.default is not None:
+            self.cleaned_value = self.default
 
     def data_type_validate(self, index):
         if type(self.value) is str:

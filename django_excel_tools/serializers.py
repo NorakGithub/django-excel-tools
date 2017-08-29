@@ -101,11 +101,12 @@ class ExcelSerializer(BaseSerializer):
 
 class CharField(BaseField):
 
-    def __init__(self, max_length, verbose_name, convert_number=True, blank=False, choices=None):
+    def __init__(self, max_length, verbose_name, convert_number=True, blank=False, choices=None, default=None):
         super(CharField, self).__init__(verbose_name, blank)
         self.max_length = max_length
         self.convert_number = convert_number
         self.choices = choices
+        self.default = default
 
     def data_type_validate(self, index):
         super(CharField, self).data_type_validate(index)
@@ -140,6 +141,9 @@ class CharField(BaseField):
         if self.choices:
             self._choice_validation_helper(index, value, self.choices)
 
+        if self.default and value is None:
+            value = self.default
+
         self.cleaned_value = value
 
 
@@ -159,9 +163,6 @@ class IntegerField(DigitBaseField):
                     message='cannot convert {} to number.'.format(value)
                 ))
 
-        elif self.default:
-            value = self.default
-
         self._data_type_validation_helper(
             index=index,
             value=value,
@@ -171,6 +172,9 @@ class IntegerField(DigitBaseField):
 
         if self.choices:
             self._choice_validation_helper(index, value, self.choices)
+
+        if self.default and value is None:
+            value = self.default
 
         self.cleaned_value = value
 

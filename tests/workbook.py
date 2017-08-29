@@ -23,7 +23,7 @@ class OrderExcelSerializer(serializers.ExcelSerializer):
     registered_date = serializers.DateField(
         verbose_name='Expired Date', date_format='%Y%m', date_format_verbose='YYYYMM'
     )
-    weight = serializers.IntegerField(verbose_name='Weight', blank=True)
+    weight = serializers.IntegerField(verbose_name='Weight', blank=True, default=0)
     qr_scanned = serializers.CharField(max_length=2, verbose_name='QR Scanned', choices=QR_SCANNED_CHOICES)
 
     class Meta:
@@ -65,7 +65,7 @@ class WorkbookTesting(object):
         self.worksheet['D2'] = 100
         self.worksheet['E2'] = '20180101'
         self.worksheet['F2'] = '201801'
-        self.worksheet['G2'] = None
+        self.worksheet['G2'] = ''
         self.worksheet['H2'] = 'T'
 
         self.worksheet['A3'] = 'Shop B'
@@ -74,4 +74,5 @@ class WorkbookTesting(object):
         self.worksheet['D3'] = 1000
         self.worksheet['E3'] = datetime.date(2017, 1, 1)
         self.worksheet['F3'] = '201802'
+        self.worksheet['G3'] = '201802'
         self.worksheet['H3'] = u'無'
