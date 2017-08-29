@@ -3,8 +3,8 @@ Django Excel Tools
 ==================
 
 
-.. image:: https://img.shields.io/pypi/v/python_excel_tools.svg
-        :target: https://pypi.python.org/pypi/python_excel_tools
+.. image:: https://badge.fury.io/py/django-excel-tools.svg
+        :target: https://badge.fury.io/py/django-excel-tools
 
 .. image:: https://travis-ci.org/NorakGithub/django-excel-tools.svg?branch=master
         :target: https://travis-ci.org/NorakGithub/django-excel-tools
