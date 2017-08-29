@@ -200,6 +200,10 @@ class DateField(BaseDateTimeField):
             if type(value) is str or type(value) is unicode:
                 value = convert_date()
 
+        if type(value) is int:
+            value = str(value)
+            value = convert_date()
+
         if type(value) is datetime.datetime:
             value = value.date()
 
@@ -237,6 +241,10 @@ class DateTimeField(BaseDateTimeField):
         else:
             if type(value) is str or type(value) is unicode:
                 value = convert_date_time()
+
+        if type(value) is int:
+            value = str(value)
+            value = convert_date_time()
 
         self._data_type_validation_helper(
             index=index,
