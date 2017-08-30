@@ -6,7 +6,8 @@ import datetime
 
 import sys
 
-from .exceptions import ValidationError, ColumnNotEqualError, FieldNotExist
+from .exceptions import ValidationError, ColumnNotEqualError, FieldNotExist, ImportOperationFailed, \
+    SerializerConfigError
 from .fields import BaseField, BASE_MESSAGE, DigitBaseField, BaseDateTimeField
 
 
@@ -22,6 +23,7 @@ class BaseSerializer(object):
         assert self.class_fields, 'There no fields added to class.'
 
         self.errors = []
+        self.operation_errors = []
         self.cleaned_data = []
         self.fields = OrderedDict()
         self.worksheet = worksheet
@@ -31,6 +33,9 @@ class BaseSerializer(object):
 
         if not self.errors:
             self._set_values()
+            self._start_operation()
+        else:
+            self.invalid(self.errors)
 
     def _class_meta_validation(self):
         assert hasattr(self, 'Meta'), 'class Meta is required'
@@ -89,14 +94,30 @@ class BaseSerializer(object):
             cleaned_row[key] = cleaned_value
         self.cleaned_data.append(cleaned_row)
 
+    def _start_operation(self):
+        try:
+            from django.db import transaction
+        except ImportError:
+            raise SerializerConfigError(message='Django is required, please make sure you installed Django via pip.')
 
-class ExcelSerializer(BaseSerializer):
+        try:
+            with transaction.atomic():
+                self.import_operation(self.cleaned_data)
+        except ImportOperationFailed:
+            self.operation_failed(self.operation_errors)
 
-    def import_operation(self):
+    def import_operation(self, cleaned_data):
         pass
 
-    def is_valid(self):
-        return False if self.errors else True
+    def invalid(self, errors):
+        pass
+
+    def operation_failed(self, errors):
+        pass
+
+
+class ExcelSerializer(BaseSerializer):
+    pass
 
 
 class CharField(BaseField):
