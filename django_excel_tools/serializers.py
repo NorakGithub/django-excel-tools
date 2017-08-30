@@ -33,6 +33,7 @@ class BaseSerializer(object):
 
         if not self.errors:
             self._set_values()
+            self.validated()
             self._start_operation()
         else:
             self.invalid(self.errors)
@@ -108,6 +109,9 @@ class BaseSerializer(object):
             self.operation_failed(self.operation_errors)
 
     def import_operation(self, cleaned_data):
+        pass
+
+    def validated(self):
         pass
 
     def invalid(self, errors):
