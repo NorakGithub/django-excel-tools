@@ -65,8 +65,8 @@ class WorkbookTesting(object):
         self.worksheet['D2'] = 100
         self.worksheet['E2'] = '20180101'
         self.worksheet['F2'] = '201801'
-        self.worksheet['G2'] = ''
-        self.worksheet['H2'] = 'T'
+        self.worksheet['G2'] = '100'
+        self.worksheet['H2'] = u'無'
 
         self.worksheet['A3'] = 'Shop B'
         self.worksheet['B3'] = '170707-001-00000-1'
