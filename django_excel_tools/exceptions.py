@@ -5,10 +5,6 @@ class BaseExcelError(Exception):
         self.message = message
 
 
-class ValidationError(BaseExcelError):
-    pass
-
-
 class ColumnNotEqualError(BaseExcelError):
     pass
 
@@ -17,5 +13,13 @@ class FieldNotExist(BaseExcelError):
     pass
 
 
+class ImportOperationFailed(BaseExcelError):
+    pass
+
+
 class SerializerConfigError(BaseExcelError):
+    pass
+
+
+class ValidationError(BaseExcelError):
     pass
