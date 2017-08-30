@@ -15,7 +15,7 @@ class BaseField(object):
         self.cleaned_value = None
 
     def validate(self, index):
-        if not self.blank and not self.value:
+        if not self.blank and self.value is None:
             raise ValidationError(message=BASE_MESSAGE.format(
                 index=index,
                 verbose_name=self.verbose_name,
