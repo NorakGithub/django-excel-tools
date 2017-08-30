@@ -13,7 +13,7 @@ class FieldNotExist(BaseExcelError):
     pass
 
 
-class ImportOperationFailed(BaseExcelError):
+class ImportOperationFailed(Exception):
     pass
 
 
