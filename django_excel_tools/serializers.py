@@ -66,7 +66,7 @@ class BaseSerializer(object):
     def _validate_column(self):
         if self.worksheet.max_column != len(self.fields):
             raise ColumnNotEqualError(message='Required {} fields, but given excel has {} fields, amount of field '
-                                              'should be the same. Also make sure you choose the right format file'
+                                              'should be the same. [Tip] You might select the wrong excel format.'
                                       .format(self.worksheet.max_column, len(self.fields)))
 
     def _set_values(self):
