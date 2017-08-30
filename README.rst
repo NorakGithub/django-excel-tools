@@ -14,6 +14,7 @@ Common function when working with excel.
 
 Requirements
 ------------
+- Django_ (1.8 or higher version)
 - openpyxl_
 
 
@@ -40,20 +41,20 @@ Class declaration
         quantity = serializers.IntegerField(verbose_name='Quantity', blank=True, default=0)
         price = serializers.IntegerField(verbose_name='Price')
         region = serializers.CharField(max_length=10, verbose_name='Region', choices=REGION_CHOICES)
-        transaction_date = serializers.DateField(date_format='%Y-%m-%d', date_format_verbose='YYYY-MM-DD', 
+        transaction_date = serializers.DateField(date_format='%Y-%m-%d', date_format_verbose='YYYY-MM-DD',
                                                  verbose_name='Transaction Date')
-        
+
         class Meta:
             start_index = 1
             fields = ('product_name', 'quantity', 'price', 'region', 'transaction_date')
-        
+
 Class initialization
 
 .. code-block:: python
 
     from openpyxl import load_workbook
 
-    
+
     def import_order():
         workbook = load_workbook(file)  # Create workbook from file. Used openpyxl
         worksheet = workbook.worksheets[0]
@@ -67,3 +68,4 @@ This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypack
 .. _Cookiecutter: https://github.com/audreyr/cookiecutter
 .. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
 .. _openpyxl: http://openpyxl.readthedocs.io/en/default/
+.. _Django: https://docs.djangoproject.com
