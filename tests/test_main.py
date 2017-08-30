@@ -70,17 +70,6 @@ class TestSerializer(unittest.TestCase):
         with self.assertRaises(FieldNotExist):
             Serializer(self.worksheet)
 
-    def test_should_failed_when_sheet_column_and_field_is_not_match(self):
-        class Serializer(serializers.ExcelSerializer):
-            field_name_1 = serializers.CharField(max_length=10, verbose_name='Field name 1')
-
-            class Meta:
-                start_index = 1
-                fields = ('field_name_1',)
-
-        with self.assertRaises(ColumnNotEqualError):
-            Serializer(self.worksheet)
-
 
 class TestValidation(unittest.TestCase):
 
@@ -90,6 +79,5 @@ class TestValidation(unittest.TestCase):
 
     def test_something(self):
         order_serializer = OrderExcelSerializer(self.worksheet)
-        order_serializer.is_valid()
         print(order_serializer.errors)
         print(order_serializer.cleaned_data)
