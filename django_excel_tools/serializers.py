@@ -29,7 +29,12 @@ class BaseSerializer(object):
         self.worksheet = worksheet
 
         self._set_fields()
-        self._validate_column()
+
+        try:
+            self._validate_column()
+        except ColumnNotEqualError as e:
+            self.invalid([e.message])
+            return
 
         if not self.errors:
             self._set_values()
@@ -60,11 +65,9 @@ class BaseSerializer(object):
 
     def _validate_column(self):
         if self.worksheet.max_column != len(self.fields):
-            raise ColumnNotEqualError(message='{} has {} fields while sheet has {}, field should be the same.'.format(
-                self.__class__.__name__,
-                len(self.fields),
-                self.worksheet.max_column,
-            ))
+            raise ColumnNotEqualError(message='Required {} fields, but given excel has {} fields, amount of field '
+                                              'should be the same. Also make sure you choose the right format file'
+                                      .format(self.worksheet.max_column, len(self.fields)))
 
     def _set_values(self):
         for row_index, row in enumerate(self.worksheet.rows):
