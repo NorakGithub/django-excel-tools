@@ -103,6 +103,7 @@ class BaseSerializer(object):
         try:
             with transaction.atomic():
                 self.import_operation(self.cleaned_data)
+            self.operation_success()
         except ImportOperationFailed:
             self.operation_failed(self.operation_errors)
 
@@ -115,9 +116,15 @@ class BaseSerializer(object):
     def operation_failed(self, errors):
         pass
 
+    def operation_success(self):
+        pass
+
 
 class ExcelSerializer(BaseSerializer):
-    pass
+
+    def gen_error(self, index, error):
+        sheet_index = self.start_index + index
+        return '[Row {sheet_index} - {error}]'.format(sheet_index=sheet_index, error=error)
 
 
 class CharField(BaseField):
