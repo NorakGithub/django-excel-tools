@@ -36,8 +36,8 @@ class BaseSerializer(object):
             self.invalid([e.message])
             return
 
+        self._set_values()
         if not self.errors:
-            self._set_values()
             self.validated()
             self._start_operation()
         else:
