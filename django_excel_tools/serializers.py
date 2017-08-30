@@ -127,7 +127,8 @@ class BaseSerializer(object):
 class ExcelSerializer(BaseSerializer):
 
     def gen_error(self, index, error):
-        sheet_index = self.start_index + index
+        # + 1 to make it equal to sheet index
+        sheet_index = self.start_index + index + 1
         return '[Row {sheet_index} - {error}]'.format(sheet_index=sheet_index, error=error)
 
 

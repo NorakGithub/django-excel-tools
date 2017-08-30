@@ -13,7 +13,7 @@ with open('HISTORY.rst') as history_file:
 
 setup(
     name='django_excel_tools',
-    version='0.0.5',
+    version='0.0.7',
     description="Common function when working with excel.",
     long_description=readme + '\n\n' + history,
     author="Khemanorak Khath",
