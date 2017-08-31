@@ -132,17 +132,16 @@ class ExcelSerializer(BaseSerializer):
     def gen_error(self, index, error):
         # + 1 to make it equal to sheet index
         sheet_index = self.start_index + index + 1
-        return '[Row {sheet_index} - {error}]'.format(sheet_index=sheet_index, error=error)
+        return '[Row {sheet_index}] {error}'.format(sheet_index=sheet_index, error=error)
 
 
 class CharField(BaseField):
 
     def __init__(self, max_length, verbose_name, convert_number=True, blank=False, choices=None, default=None):
-        super(CharField, self).__init__(verbose_name, blank)
+        super(CharField, self).__init__(verbose_name, blank, default)
         self.max_length = max_length
         self.convert_number = convert_number
         self.choices = choices
-        self.default = default
 
     def data_type_validate(self, index):
         super(CharField, self).data_type_validate(index)
@@ -177,9 +176,6 @@ class CharField(BaseField):
         if self.choices:
             self._choice_validation_helper(index, value, self.choices)
 
-        if self.default and value is None:
-            value = self.default
-
         self.cleaned_value = value
 
 
@@ -208,9 +204,6 @@ class IntegerField(DigitBaseField):
 
         if self.choices:
             self._choice_validation_helper(index, value, self.choices)
-
-        if self.default and value is None:
-            value = self.default
 
         self.cleaned_value = value
 

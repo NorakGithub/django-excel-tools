@@ -22,7 +22,7 @@ class BaseField(object):
                 message='is not allow to be blank.')
             )
 
-        if self.value:
+        if self.value is not None:
             self.data_type_validate(index)
         elif self.default is not None:
             self.cleaned_value = self.default
