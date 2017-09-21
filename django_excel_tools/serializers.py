@@ -135,6 +135,16 @@ class ExcelSerializer(BaseSerializer):
         return '[Row {sheet_index}] {error}'.format(sheet_index=sheet_index, error=error)
 
 
+class BooleanField(BaseField):
+
+    def __init__(self, verbose_name):
+        super(BooleanField, self).__init__(verbose_name=verbose_name, blank=True, default=None)
+
+    def data_type_validate(self, index):
+        super(BooleanField, self).data_type_validate(index)
+        self.cleaned_value = True if self.value else False
+
+
 class CharField(BaseField):
 
     def __init__(self, max_length, verbose_name, convert_number=True, blank=False, choices=None, default=None):

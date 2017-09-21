@@ -71,13 +71,21 @@ class TestSerializer(unittest.TestCase):
             Serializer(self.worksheet)
 
 
-class TestValidation(unittest.TestCase):
+class TestResult(unittest.TestCase):
 
     def setUp(self):
         workbook = WorkbookTesting()
         self.worksheet = workbook.worksheet
 
-    def test_something(self):
+    def test_result(self):
         order_serializer = OrderExcelSerializer(self.worksheet)
-        print(order_serializer.errors)
-        print(order_serializer.cleaned_data)
+        data = order_serializer.cleaned_data
+        first_row = data[0]
+        self.assertEqual(first_row['shop_name'], 'Shop A')
+        self.assertEqual(first_row['quantity'], 100)
+        self.assertEqual(first_row['default_checked'], True)
+
+        second_row = data[1]
+        self.assertEqual(second_row['shop_name'], 'Shop B')
+        self.assertEqual(second_row['quantity'], 1000)
+        self.assertEqual(second_row['default_checked'], False)
