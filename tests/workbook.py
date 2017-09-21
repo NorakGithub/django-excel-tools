@@ -25,6 +25,7 @@ class OrderExcelSerializer(serializers.ExcelSerializer):
     )
     weight = serializers.IntegerField(verbose_name='Weight', blank=True, default=0)
     qr_scanned = serializers.CharField(max_length=2, verbose_name='QR Scanned', choices=QR_SCANNED_CHOICES)
+    default_checked = serializers.BooleanField(verbose_name='Default Checked')
 
     class Meta:
         start_index = 1
@@ -36,7 +37,8 @@ class OrderExcelSerializer(serializers.ExcelSerializer):
             'inspection_expired_date',
             'registered_date',
             'weight',
-            'qr_scanned'
+            'qr_scanned',
+            'default_checked'
         )
 
 
@@ -57,6 +59,7 @@ class WorkbookTesting(object):
         self.worksheet['F1'] = 'Registered Date'
         self.worksheet['G1'] = 'Weight'
         self.worksheet['H1'] = 'QR Scanned'
+        self.worksheet['I1'] = 'Default Checked'
 
     def _generate_data(self):
         self.worksheet['A2'] = 'Shop A'
@@ -67,12 +70,14 @@ class WorkbookTesting(object):
         self.worksheet['F2'] = '201801'
         self.worksheet['G2'] = '100'
         self.worksheet['H2'] = u'無'
+        self.worksheet['I2'] = 'AB'
 
         self.worksheet['A3'] = 'Shop B'
         self.worksheet['B3'] = '170707-001-00000-1'
         self.worksheet['C3'] = '2017-07-08'
-        self.worksheet['D3'] = 1000
+        self.worksheet['D3'] = '1000'
         self.worksheet['E3'] = datetime.date(2017, 1, 1)
         self.worksheet['F3'] = '201802'
         self.worksheet['G3'] = '201802'
         self.worksheet['H3'] = u'無'
+        self.worksheet['I3'] = ''
