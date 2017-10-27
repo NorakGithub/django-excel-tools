@@ -14,6 +14,10 @@ class BaseField(object):
         self.value = None
         self.cleaned_value = None
 
+    def reset(self):
+        self.value = None
+        self.cleaned_value = None
+
     def validate(self, index):
         if not self.blank and self.value is None:
             raise ValidationError(message=BASE_MESSAGE.format(
