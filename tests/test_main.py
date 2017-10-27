@@ -84,8 +84,12 @@ class TestResult(unittest.TestCase):
         self.assertEqual(first_row['shop_name'], 'Shop A')
         self.assertEqual(first_row['quantity'], 100)
         self.assertEqual(first_row['default_checked'], True)
+        self.assertEqual(first_row['weight'], 100)
+        self.assertEqual(first_row['address'], '123/Home')
 
         second_row = data[1]
         self.assertEqual(second_row['shop_name'], 'Shop B')
         self.assertEqual(second_row['quantity'], 1000)
         self.assertEqual(second_row['default_checked'], False)
+        self.assertEqual(second_row['weight'], 0)
+        self.assertEqual(second_row['address'], '')
