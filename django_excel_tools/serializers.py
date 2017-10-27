@@ -83,6 +83,11 @@ class BaseSerializer(object):
                     self.errors.append(error.message)
 
             self._set_cleaned_values(self.fields)
+            self._reset_fields_value()
+
+    def _reset_fields_value(self):
+        for key in self.field_names:
+            self.fields[key].reset()
 
     def _set_cleaned_values(self, validated_fields):
         cleaned_row = {}
@@ -195,6 +200,10 @@ class IntegerField(DigitBaseField):
         super(IntegerField, self).data_type_validate(index)
 
         value = self.value
+
+        if self.default is not None and not self.value:
+            value = self.default
+
         if self.convert_str and type(value) is not int:
             try:
                 value = int(value)
