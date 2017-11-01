@@ -84,5 +84,5 @@ class WorkbookTesting(object):
         self.worksheet['F3'] = '201802'
         self.worksheet['G3'] = ''
         self.worksheet['H3'] = u'無'
-        self.worksheet['I3'] = ''
+        self.worksheet['I3'] = None
         self.worksheet['J3'] = ''
