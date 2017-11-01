@@ -67,7 +67,7 @@ class BaseSerializer(object):
         if self.worksheet.max_column != len(self.fields):
             raise ColumnNotEqualError(message='Required {} fields, but given excel has {} fields, amount of field '
                                               'should be the same. [Tip] You might select the wrong excel format.'
-                                      .format(self.worksheet.max_column, len(self.fields)))
+                                      .format(len(self.fields), self.worksheet.max_column))
 
     def _set_values(self):
         for row_index, row in enumerate(self.worksheet.rows):
@@ -143,7 +143,7 @@ class ExcelSerializer(BaseSerializer):
 class BooleanField(BaseField):
 
     def __init__(self, verbose_name):
-        super(BooleanField, self).__init__(verbose_name=verbose_name, blank=True, default=None)
+        super(BooleanField, self).__init__(verbose_name=verbose_name, blank=True, default=False)
 
     def data_type_validate(self, index):
         super(BooleanField, self).data_type_validate(index)
