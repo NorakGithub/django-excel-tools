@@ -54,7 +54,7 @@ class BaseSerializer(object):
         assert fields_is_list_or_tuple, 'Meta.fields type must be either list or tuple.'
 
         if hasattr(self.Meta, 'enable_django_transaction'):
-            assert self.Meta.enable_django_transaction is bool, 'Meta.enable_django_transaction is bool type.'
+            assert type(self.Meta.enable_django_transaction) is bool, 'Meta.enable_django_transaction is bool type.'
             self.enable_django_transaction = self.Meta.enable_django_transaction
         else:
             self.enable_django_transaction = True
