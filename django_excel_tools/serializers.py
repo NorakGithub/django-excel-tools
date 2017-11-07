@@ -49,9 +49,15 @@ class BaseSerializer(object):
         assert hasattr(self.Meta, 'start_index'), 'Meta.start_index in class Meta is required.'
         assert type(self.Meta.start_index) is int, 'Meta.start_index type is int.'
 
-        assert hasattr(self.Meta, 'fields'), 'Meta.fields in class Meta is required'
+        assert hasattr(self.Meta, 'fields'), 'Meta.fields in class Meta is required.'
         fields_is_list_or_tuple = type(self.Meta.fields) is list or type(self.Meta.fields) is tuple
-        assert fields_is_list_or_tuple, 'Meta.fields type must be list or tuple'
+        assert fields_is_list_or_tuple, 'Meta.fields type must be either list or tuple.'
+
+        if hasattr(self.Meta, 'enable_django_transaction'):
+            assert self.Meta.enable_django_transaction is bool, 'Meta.enable_django_transaction is bool type.'
+            self.enable_django_transaction = self.Meta.enable_django_transaction
+        else:
+            self.enable_django_transaction = True
 
         self.field_names = self.Meta.fields
         self.start_index = self.Meta.start_index
@@ -104,6 +110,14 @@ class BaseSerializer(object):
         self.cleaned_data.append(cleaned_row)
 
     def _start_operation(self):
+        if self.enable_django_transaction:
+            try:
+                self.import_operation(self.cleaned_data)
+                self.operation_success()
+            except ImportOperationFailed:
+                self.operation_failed(self.operation_errors)
+            return
+
         try:
             from django.db import transaction
         except ImportError:
