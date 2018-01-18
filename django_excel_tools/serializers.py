@@ -254,6 +254,8 @@ class DateField(BaseDateTimeField):
                 )
 
         def convert_date():
+            if not value and self.blank:
+                return None
             try:
                 return datetime.datetime.strptime(value, self.date_format).date()
             except ValueError:
@@ -296,6 +298,8 @@ class DateTimeField(BaseDateTimeField):
                     )
 
         def convert_date_time():
+            if not value and self.blank:
+                return None
             try:
                 return datetime.datetime.strptime(value, self.date_format)
             except ValueError:
