@@ -25,9 +25,11 @@ class BaseField(object):
     def validate(self, index):
         validating_value = self.strip_value_space()
         validating_value = self.validate_blank(validating_value, index)
-        validating_value = self.validate_specific_data_type(validating_value, index)
-        validating_value = self.validate_default(validating_value)
-        self.cleaned_value = validating_value
+        if validating_value in ['', None]:
+            self.cleaned_value = validating_value
+        else:
+            validating_value = self.validate_specific_data_type(validating_value, index)
+            self.cleaned_value = validating_value
 
     def validate_blank(self, validating_value, index):
         blank_values = ['', None]
@@ -37,6 +39,10 @@ class BaseField(object):
                 verbose_name=self.verbose_name,
                 message='is not allow to be blank.'
             ))
+
+        if self.blank and validating_value in blank_values and self.default is not None:
+            return self.default
+
         return validating_value
 
     def strip_value_space(self):

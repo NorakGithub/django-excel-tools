@@ -115,6 +115,7 @@ class TestField(unittest.TestCase):
         self.worksheet.append(self.basic_data)
         serializer = OrderExcelSerializer(self.worksheet)
         self.assertFalse(serializer.errors)
+        self.assertEqual(serializer.cleaned_data[0]['weight'], 0)
 
     def test_datetime_field(self):
         self.worksheet.append(self.basic_data)
