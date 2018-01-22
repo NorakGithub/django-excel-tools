@@ -124,6 +124,24 @@ class TestField(unittest.TestCase):
         date = datetime.datetime(year=2018, month=1, day=1).date()
         self.assertEqual(serializer.cleaned_data[0]['registered_date'], date)
 
+    def test_datetime_blank_with_none(self):
+        self.basic_data[5] = None
+        self.worksheet.append(self.basic_data)
+        serializer = OrderExcelSerializer(self.worksheet)
+        self.assertFalse(serializer.errors)
+
+    def test_datetime_blank_with_empty_str(self):
+        self.basic_data[5] = ''
+        self.worksheet.append(self.basic_data)
+        serializer = OrderExcelSerializer(self.worksheet)
+        self.assertFalse(serializer.errors)
+
+    def test_datetime_blank_should_receive_error(self):
+        self.basic_data[2] = ''
+        self.worksheet.append(self.basic_data)
+        serializer = OrderExcelSerializer(self.worksheet)
+        self.assertTrue(serializer.errors)
+
 
 class TestResult(unittest.TestCase):
 

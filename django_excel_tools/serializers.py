@@ -230,7 +230,7 @@ class DateField(BaseDateTimeField):
             return validating_value.date()
 
         validating_value = self.convert_datetime(validating_value, index)
-        return validating_value.date()
+        return validating_value.date() if validating_value is not None else validating_value
 
 
 class DateTimeField(BaseDateTimeField):
@@ -241,4 +241,4 @@ class DateTimeField(BaseDateTimeField):
             return validating_value
 
         validating_value = self.convert_datetime(validating_value, index)
-        return validating_value
+        return validating_value if validating_value is not None else validating_value

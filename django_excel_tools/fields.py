@@ -104,6 +104,9 @@ class BaseDateTimeField(BaseField):
         self.date_format_verbose = date_format_verbose
 
     def convert_datetime(self, validating_value, index):
+        if self.blank and validating_value in ['', None]:
+            return None
+
         try:
             return datetime.datetime.strptime(validating_value, self.date_format)
         except ValueError:
