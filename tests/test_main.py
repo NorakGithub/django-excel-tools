@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import unittest
 
+import datetime
 from openpyxl import Workbook
 
 from django_excel_tools import serializers
@@ -71,11 +72,66 @@ class TestSerializer(unittest.TestCase):
             Serializer(self.worksheet)
 
 
+class TestField(unittest.TestCase):
+
+    def setUp(self):
+        workbook = WorkbookTesting()
+        self.worksheet = workbook.worksheet
+        self.basic_data = ['Shop', '10', '2017-07-07', 100, '20180101', 201801, '100', u'無', 'AB', '123/Home']
+
+    def test_allow_blank_with_empty_string(self):
+        self.basic_data[9] = ''
+        self.worksheet.append(self.basic_data)
+        serializer = OrderExcelSerializer(self.worksheet)
+        self.assertFalse(serializer.errors)
+
+    def test_allow_blank_but_there_is_data(self):
+        self.worksheet.append(self.basic_data)
+        serializer = OrderExcelSerializer(self.worksheet)
+        self.assertFalse(serializer.errors)
+        self.assertEqual(serializer.cleaned_data[0]['shop_name'], 'Shop')
+
+    def test_not_allow_blank_with_empty_string(self):
+        self.basic_data[0] = '  '  # Set shop field to blank
+        self.worksheet.append(self.basic_data)
+        serializer = OrderExcelSerializer(self.worksheet)
+        self.assertTrue(serializer.errors)
+
+    def test_not_allow_blank_with_zero(self):
+        self.basic_data[0] = 0
+        self.worksheet.append(self.basic_data)
+        serializer = OrderExcelSerializer(self.worksheet)
+        self.assertFalse(serializer.errors)
+        self.assertEqual(serializer.cleaned_data[0]['shop_name'], '0')
+
+    def test_max_length(self):
+        self.basic_data[0] = '123456789010'
+        self.worksheet.append(self.basic_data)
+        serializer = OrderExcelSerializer(self.worksheet)
+        self.assertTrue(serializer.errors)
+
+    def test_default_int(self):
+        self.basic_data[6] = ''
+        self.worksheet.append(self.basic_data)
+        serializer = OrderExcelSerializer(self.worksheet)
+        self.assertFalse(serializer.errors)
+
+    def test_datetime_field(self):
+        self.worksheet.append(self.basic_data)
+        serializer = OrderExcelSerializer(self.worksheet)
+        self.assertFalse(serializer.errors)
+
+        date = datetime.datetime(year=2018, month=1, day=1).date()
+        self.assertEqual(serializer.cleaned_data[0]['registered_date'], date)
+
+
 class TestResult(unittest.TestCase):
 
     def setUp(self):
         workbook = WorkbookTesting()
         self.worksheet = workbook.worksheet
+        self.worksheet.append(workbook.row_1)
+        self.worksheet.append(workbook.row_2)
 
     def test_result(self):
         order_serializer = OrderExcelSerializer(self.worksheet)
