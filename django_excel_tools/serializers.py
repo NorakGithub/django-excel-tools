@@ -33,6 +33,7 @@ class BaseSerializer(object):
         try:
             self._validate_column()
         except ColumnNotEqualError as e:
+            self.errors.append(e.message)
             self.invalid([e.message])
             return
 
@@ -159,9 +160,8 @@ class BooleanField(BaseField):
     def __init__(self, verbose_name):
         super(BooleanField, self).__init__(verbose_name=verbose_name, blank=True, default=False)
 
-    def data_type_validate(self, index):
-        super(BooleanField, self).data_type_validate(index)
-        self.cleaned_value = True if self.value else False
+    def validate_specific_data_type(self, validating_value, index):
+        return True if validating_value else False
 
 
 class CharField(BaseField):
@@ -172,15 +172,10 @@ class CharField(BaseField):
         self.convert_number = convert_number
         self.choices = choices
 
-    def data_type_validate(self, index):
-        super(CharField, self).data_type_validate(index)
-
-        value = self.value
+    def validate_specific_data_type(self, validating_value, index):
+        str_type = str if sys.version_info >= (3, 0) else unicode
         if self.convert_number:
-            if sys.version_info >= (3, 0):
-                value = str(value).strip()
-            else:
-                value = unicode(value).strip()
+            validating_value = str_type(validating_value)
 
         type_error_message = BASE_MESSAGE.format(
             index=index,
@@ -188,139 +183,62 @@ class CharField(BaseField):
             message='must be text.'
         )
 
-        if sys.version_info >= (3, 0):
-            if type(value) is not str:
-                raise ValidationError(message=type_error_message)
-        else:
-            if type(value) is not str and type(value) is not unicode:
-                raise ValidationError(message=type_error_message)
+        str_types = [str]
+        if sys.version_info <= (3, 0):
+            str_types.append(unicode)
 
-        if len(value) > self.max_length:
+        if type(validating_value) not in str_types:
+            raise ValidationError(message=type_error_message)
+
+        if len(validating_value) > self.max_length:
             raise ValidationError(message=BASE_MESSAGE.format(
                 index=index,
                 verbose_name=self.verbose_name,
-                message='cannot be more than {} characters.'.format(self.max_length)
+                message='cannot be more than {} characters'.format(self.max_length)
             ))
 
         if self.choices:
-            self._choice_validation_helper(index, value, self.choices)
+            self._choice_validation_helper(index, validating_value, self.choices)
 
-        self.cleaned_value = value
+        return validating_value
 
 
 class IntegerField(DigitBaseField):
 
-    def data_type_validate(self, index):
-        super(IntegerField, self).data_type_validate(index)
-
-        value = self.value
-
-        if self.default is not None and not self.value:
-            value = self.default
-
-        if self.convert_str and type(value) is not int:
-            try:
-                value = int(value)
-            except ValueError:
+    def validate_specific_data_type(self, validating_value, index):
+        try:
+            validating_value = int(validating_value)
+        except ValueError:
+            if self.default is None:
                 raise ValidationError(message=BASE_MESSAGE.format(
                     index=index,
                     verbose_name=self.verbose_name,
-                    message='cannot convert {} to number.'.format(value)
+                    message='cannot convert {} to number.'.format(validating_value)
                 ))
 
-        self._data_type_validation_helper(
-            index=index,
-            value=value,
-            data_type=int,
-            error_message='expected type is number but received {}.'.format(type(value).__name__)
-        )
-
         if self.choices:
-            self._choice_validation_helper(index, value, self.choices)
+            self._choice_validation_helper(index, validating_value, self.choices)
 
-        self.cleaned_value = value
+        return validating_value
 
 
 class DateField(BaseDateTimeField):
 
-    def data_type_validate(self, index):
-        super(DateField, self).data_type_validate(index)
+    def validate_specific_data_type(self, validating_value, index):
+        validating_value = self.convert_int_to_str(validating_value)
+        if type(validating_value) is datetime.datetime:
+            return validating_value.date()
 
-        value = self.value
-        type_error_message = BASE_MESSAGE.format(
-                    index=index,
-                    verbose_name=self.verbose_name,
-                    message='"{}" is incorrect format, it should be "{}".'.format(value, self.date_format_verbose)
-                )
-
-        def convert_date():
-            if not value and self.blank:
-                return None
-            try:
-                return datetime.datetime.strptime(value, self.date_format).date()
-            except ValueError:
-                raise ValidationError(message=type_error_message)
-
-        if sys.version_info >= (3, 0):
-            if type(value) is str:
-                value = convert_date()
-        else:
-            if type(value) is str or type(value) is unicode:
-                value = convert_date()
-
-        if type(value) is int:
-            value = str(value)
-            value = convert_date()
-
-        if type(value) is datetime.datetime:
-            value = value.date()
-
-        self._data_type_validation_helper(
-            index=index,
-            value=value,
-            data_type=datetime.date,
-            error_message='expected type is date but received {}.'.format(type(value).__name__)
-        )
-
-        self.cleaned_value = value
+        validating_value = self.convert_datetime(validating_value, index)
+        return validating_value.date()
 
 
 class DateTimeField(BaseDateTimeField):
 
-    def data_type_validate(self, index):
-        super(DateTimeField, self).data_type_validate(index)
+    def validate_specific_data_type(self, validating_value, index):
+        validating_value = self.convert_int_to_str(validating_value)
+        if type(validating_value) is datetime.datetime:
+            return validating_value
 
-        value = self.value
-        type_error_message = BASE_MESSAGE.format(
-                        index=index,
-                        verbose_name=self.verbose_name,
-                        message='"{}" is incorrect format, it should be "{}"'.format(value, self.date_format_verbose)
-                    )
-
-        def convert_date_time():
-            if not value and self.blank:
-                return None
-            try:
-                return datetime.datetime.strptime(value, self.date_format)
-            except ValueError:
-                raise ValidationError(message=type_error_message)
-
-        if sys.version_info >= (3, 0):
-            if type(value) is str:
-                value = convert_date_time()
-        else:
-            if type(value) is str or type(value) is unicode:
-                value = convert_date_time()
-
-        if type(value) is int:
-            value = str(value)
-            value = convert_date_time()
-
-        self._data_type_validation_helper(
-            index=index,
-            value=value,
-            data_type=datetime.datetime,
-            error_message='expected type is datetime but received {}.'.format(type(value).__name__)
-        )
-
-        self.cleaned_value = value
+        validating_value = self.convert_datetime(validating_value, index)
+        return validating_value
