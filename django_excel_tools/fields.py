@@ -118,3 +118,4 @@ class BaseDateTimeField(BaseField):
         if type(validating_value) is int:
             str_type = str if sys.version_info >= (3, 0) else unicode
             return str_type(validating_value)
+        return validating_value
