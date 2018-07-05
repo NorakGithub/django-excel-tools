@@ -1,11 +1,18 @@
 language: python
 python:
-  - "3.6"
-  - "3.5"
-  - "3.4"
-  - "3.3"
-  - "2.7"
-
-install: "pip install -r requirements.txt"
-
+- '3.6'
+- '3.5'
+- '3.4'
+- '3.3'
+- '2.7'
+install: pip install -r requirements.txt
 script: pytest
+deploy:
+  provider: pypi
+  user: khemanorak
+  password:
+    secure: lBwHP87+08WhSnHmwhHzrV/fSkSR1OnotJFBTLhIxjFMITC38ZiJ6u1dbi6UYhdCB9FzsZYah9M3hPAOfxkYRWk8axJw5F/2UC+HL8OX1AKmdLpnMQfa/RWspp++RKbgU2xs3PmsXrZO16fMTJ5cKwvz849bv+eJqGhq/ax9WTPJ6/Oh79bmj0EB5QawNU4knZ2G2/cVzlsbXyMNTi04EekDQoOXehztmM6b8C09HFqhn7Kgw2C19RyCIfquK5qC+bl/ZIvVLpD8UNkPShzT9AbuPa/cNJHbojMjItFMZ0eir8MUOliJak/bDi50EPFLH+hdGyOut1ZdC71N7ciCUdgwuTRsidBaPHeoF0De1GjssyPFwlXXAVlIO43G0H25GQDh/NDUVJqwLlkj//ZUoppSeQfe6YEdBhxbAvkAZe/9/4nKkg3oqUjg9AYnQhQqgJiMeQahLYfQ3oAVfp44tkQc72IzxvewR/Zubf7CNOt2m74Mg7y+9yK6+LyB8uA++/p0g6Tb10GhT1yBeCSm+4+6dkufqDUyaQzpasElPhfcQgMzacZ2pgfKuNkDCavF51lZXZgRxqWCXw3IJdOXEiCn3rauaB3ewZ6MUwkwDuHmb8tmYfXmbOLUT08GEm0gxWs7WA1UerB3Iy2EZXv7kOBD7VHQf7LuusAa/6GvNuc=
+  on:
+    tags: true
+    distributions: sdist bdist_wheel
+    repo: NorakGithub/django-excel-tools
