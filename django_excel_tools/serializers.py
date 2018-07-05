@@ -166,11 +166,12 @@ class BooleanField(BaseField):
 
 class CharField(BaseField):
 
-    def __init__(self, max_length, verbose_name, convert_number=True, blank=False, choices=None, default=None):
+    def __init__(self, max_length, verbose_name, convert_number=True, blank=False, choices=None, default=None, case_sensitive=True):
         super(CharField, self).__init__(verbose_name, blank, default)
         self.max_length = max_length
         self.convert_number = convert_number
         self.choices = choices
+        self.case_sensitive = case_sensitive
 
     def validate_specific_data_type(self, validating_value, index):
         str_type = str if sys.version_info >= (3, 0) else unicode
@@ -198,7 +199,7 @@ class CharField(BaseField):
             ))
 
         if self.choices:
-            self._choice_validation_helper(index, validating_value, self.choices)
+            self._choice_validation_helper(index, validating_value, self.choices, self.case_sensitive)
 
         return validating_value
 
@@ -209,12 +210,11 @@ class IntegerField(DigitBaseField):
         try:
             validating_value = int(validating_value)
         except ValueError:
-            if self.default is None:
-                raise ValidationError(message=BASE_MESSAGE.format(
-                    index=index,
-                    verbose_name=self.verbose_name,
-                    message='cannot convert {} to number.'.format(validating_value)
-                ))
+            raise ValidationError(message=BASE_MESSAGE.format(
+                index=index,
+                verbose_name=self.verbose_name,
+                message='cannot convert {} to number.'.format(validating_value)
+            ))
 
         if self.choices:
             self._choice_validation_helper(index, validating_value, self.choices)
