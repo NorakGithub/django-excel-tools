@@ -77,7 +77,7 @@ class TestField(unittest.TestCase):
     def setUp(self):
         workbook = WorkbookTesting()
         self.worksheet = workbook.worksheet
-        self.basic_data = ['Shop', '10', '2017-07-07', 100, '20180101', 201801, '100', u'無', 'AB', '123/Home']
+        self.basic_data = ['Shop', '10', '2017-07-07', 100, '20180101', 201801, '100', u'無', 'AB', '123/Home', 'Yes']
 
     def test_allow_blank_with_empty_string(self):
         self.basic_data[9] = ''
@@ -139,6 +139,24 @@ class TestField(unittest.TestCase):
 
     def test_datetime_blank_should_receive_error(self):
         self.basic_data[2] = ''
+        self.worksheet.append(self.basic_data)
+        serializer = OrderExcelSerializer(self.worksheet)
+        self.assertTrue(serializer.errors)
+
+    def test_invalid_integer(self):
+        self.basic_data[1] = 'Not Integer'
+        self.worksheet.append(self.basic_data)
+        serializer = OrderExcelSerializer(self.worksheet)
+        self.assertTrue(serializer.errors)
+
+    def test_case_sensitive(self):
+        self.basic_data[10] = 'yes'
+        self.worksheet.append(self.basic_data)
+        serializer = OrderExcelSerializer(self.worksheet)
+        self.assertFalse(serializer.errors)
+
+    def test_invalid_integer_with_default_value(self):
+        self.basic_data[6] = 'Not Integer'
         self.worksheet.append(self.basic_data)
         serializer = OrderExcelSerializer(self.worksheet)
         self.assertTrue(serializer.errors)
