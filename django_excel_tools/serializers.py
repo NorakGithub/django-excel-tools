@@ -90,7 +90,11 @@ class BaseSerializer(object):
                     self.errors.append(error.message)
 
             cleaned_row = self._set_cleaned_values(self.fields)
-            self.row_extra_validation(cleaned_row)
+            try:
+                self.row_extra_validation(cleaned_row)
+            except ValidationError as error:
+                self.errors.append(error.message)
+            
             self._reset_fields_value()
 
     def _reset_fields_value(self):
