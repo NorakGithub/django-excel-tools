@@ -210,11 +210,12 @@ class IntegerField(DigitBaseField):
         try:
             validating_value = int(validating_value)
         except ValueError:
-            raise ValidationError(message=BASE_MESSAGE.format(
-                index=index,
-                verbose_name=self.verbose_name,
-                message='cannot convert {} to number.'.format(validating_value)
-            ))
+            if self.default is None:
+                raise ValidationError(message=BASE_MESSAGE.format(
+                    index=index,
+                    verbose_name=self.verbose_name,
+                    message='cannot convert {} to number.'.format(validating_value)
+                ))
 
         if self.choices:
             self._choice_validation_helper(index, validating_value, self.choices)
