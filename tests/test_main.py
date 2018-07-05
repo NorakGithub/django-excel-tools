@@ -143,6 +143,12 @@ class TestField(unittest.TestCase):
         serializer = OrderExcelSerializer(self.worksheet)
         self.assertTrue(serializer.errors)
 
+    def test_invalid_integer_with_default_value(self):
+        self.basic_data[6] = 'Not Integer'
+        self.worksheet.append(self.basic_data)
+        serializer = OrderExcelSerializer(self.worksheet)
+        self.assertTrue(serializer.errors)
+
 
 class TestResult(unittest.TestCase):
 
