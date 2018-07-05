@@ -80,7 +80,7 @@ class TestSerializer(unittest.TestCase):
                 start_index = 1
                 fields = ('field_name_1', 'field_name_2')
             
-            def row_extra_validation(self, cleaned_row):
+            def row_extra_validation(self, index, cleaned_row):
                 assert cleaned_row['field_name_1'] == 'value 1'
                 assert cleaned_row['field_name_2'] == 'value 2'
         

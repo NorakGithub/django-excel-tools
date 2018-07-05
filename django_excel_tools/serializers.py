@@ -91,7 +91,7 @@ class BaseSerializer(object):
 
             cleaned_row = self._set_cleaned_values(self.fields)
             try:
-                self.row_extra_validation(cleaned_row)
+                self.row_extra_validation(row_index + 1, cleaned_row)
             except ValidationError as error:
                 self.errors.append(error.message)
             
@@ -152,7 +152,7 @@ class BaseSerializer(object):
     def operation_success(self):
         pass
 
-    def row_extra_validation(self, cleaned_row):
+    def row_extra_validation(self, index, cleaned_row):
         pass
 
 
