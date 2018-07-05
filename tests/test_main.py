@@ -71,6 +71,20 @@ class TestSerializer(unittest.TestCase):
         with self.assertRaises(FieldNotExist):
             Serializer(self.worksheet)
 
+    def test_should_call_row_extra_validation_when_override(self):
+        class Serializer(serializers.ExcelSerializer):
+            field_name_1 = serializers.CharField(max_length=10, verbose_name='Field name 1')
+            field_name_2 = serializers.CharField(max_length=10, verbose_name='Field name 2')
+            
+            class Meta:
+                start_index = 1
+                fields = ('field_name_1', 'field_name_2')
+            
+            def row_extra_validation(self, cleaned_row):
+                assert cleaned_row['field_name_1'] == 'value 1'
+                assert cleaned_row['field_name_2'] == 'value 2'
+        
+        Serializer(self.worksheet)
 
 class TestField(unittest.TestCase):
 
