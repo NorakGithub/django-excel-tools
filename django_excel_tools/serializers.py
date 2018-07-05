@@ -89,7 +89,8 @@ class BaseSerializer(object):
                 except ValidationError as error:
                     self.errors.append(error.message)
 
-            self._set_cleaned_values(self.fields)
+            cleaned_row = self._set_cleaned_values(self.fields)
+            self.row_extra_validation(cleaned_row)
             self._reset_fields_value()
 
     def _reset_fields_value(self):
@@ -109,6 +110,7 @@ class BaseSerializer(object):
                 pass
             cleaned_row[key] = cleaned_value
         self.cleaned_data.append(cleaned_row)
+        return cleaned_row
 
     def _start_operation(self):
         if self.enable_django_transaction:
@@ -144,6 +146,9 @@ class BaseSerializer(object):
         pass
 
     def operation_success(self):
+        pass
+
+    def row_extra_validation(self, cleaned_row):
         pass
 
 
