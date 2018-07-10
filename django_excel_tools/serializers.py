@@ -70,18 +70,42 @@ class BaseSerializer(object):
             except AttributeError:
                 raise FieldNotExist(message='{} is not defined in class field.'.format(field_name))
 
+    def _get_populated_header_columns(self):
+        populated_headers = 0
+        for col in self.worksheet.columns:
+            values = [cell.value for cell in col]
+            value = values[0]
+            if value == '':
+                continue
+            populated_headers += 1
+
+        return populated_headers
+
+    def _get_populated_rows(self):
+        populated_rows = 0
+        for row in self.worksheet.rows:
+            values = [cell.value for cell in row]
+            if all(value == '' for value in values):
+                continue
+            populated_rows += 1
+        return populated_rows
+
     def _validate_column(self):
-        if self.worksheet.max_column != len(self.fields):
+        populated_headers = self._get_populated_header_columns()
+
+        if populated_headers != len(self.fields):
             raise ColumnNotEqualError(message='Required {} fields, but given excel has {} fields, amount of field '
                                               'should be the same. [Tip] You might select the wrong excel format.'
-                                      .format(len(self.fields), self.worksheet.max_column))
+                                      .format(len(self.fields), populated_headers))
 
     def _set_values(self):
-        for row_index, row in enumerate(self.worksheet.rows):
+        for row_index, row in enumerate(self.worksheet.iter_rows(max_row=self._get_populated_rows())):
             if row_index < self.start_index:
                 continue
 
             for index, cell in enumerate(row):
+                if index+1 > self._get_populated_header_columns():
+                    break
                 key = self.field_names[index]
                 self.fields[key].value = cell.value
                 try:
@@ -94,7 +118,7 @@ class BaseSerializer(object):
                 self.row_extra_validation(row_index + 1, cleaned_row)
             except ValidationError as error:
                 self.errors.append(error.message)
-            
+
             self._reset_fields_value()
 
     def _reset_fields_value(self):
