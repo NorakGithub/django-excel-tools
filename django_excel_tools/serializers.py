@@ -70,18 +70,18 @@ class BaseSerializer(object):
             except AttributeError:
                 raise FieldNotExist(message='{} is not defined in class field.'.format(field_name))
 
-    def _get_populated_header_columns(self):
-        populated_headers = 0
+    def _get_max_column(self):
+        max_column = 0
         for col in self.worksheet.columns:
             values = [cell.value for cell in col]
             value = values[0]
             if value == '':
                 continue
-            populated_headers += 1
+            max_column += 1
 
-        return populated_headers
+        return max_column
 
-    def _get_populated_rows(self):
+    def _get_max_row(self):
         populated_rows = 0
         for row in self.worksheet.rows:
             values = [cell.value for cell in row]
@@ -91,20 +91,22 @@ class BaseSerializer(object):
         return populated_rows
 
     def _validate_column(self):
-        populated_headers = self._get_populated_header_columns()
-
-        if populated_headers != len(self.fields):
-            raise ColumnNotEqualError(message='Required {} fields, but given excel has {} fields, amount of field '
-                                              'should be the same. [Tip] You might select the wrong excel format.'
-                                      .format(len(self.fields), populated_headers))
+        max_column = self._get_max_column()
+        if max_column != len(self.fields):
+            message = ('Required {} fields, but given excel has {} fields, '
+                       'amount of field should be the same. [Tip] You might '
+                       'select the wrong excel format.'
+                       ''.format(len(self.fields), max_column))
+            raise ColumnNotEqualError(message=message)
 
     def _set_values(self):
-        for row_index, row in enumerate(self.worksheet.iter_rows(max_row=self._get_populated_rows())):
+        max_row = self._get_max_row()
+        for row_index, row in enumerate(self.worksheet.iter_rows(max_row=max_row)):
             if row_index < self.start_index:
                 continue
 
             for index, cell in enumerate(row):
-                if index+1 > self._get_populated_header_columns():
+                if index+1 > self._get_max_column():
                     break
                 key = self.field_names[index]
                 self.fields[key].value = cell.value
