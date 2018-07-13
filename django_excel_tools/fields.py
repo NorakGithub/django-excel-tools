@@ -87,7 +87,7 @@ class BaseField(object):
             raise ValidationError(message=BASE_MESSAGE.format(
                 index=index,
                 verbose_name=self.verbose_name,
-                message=u'{} is not correct, it must has one of these {}.'.format(value, choices.title())
+                message=u'{} is not correct, it must has one of these {}.'.format(value, choices)
             ))
 
     def __repr__(self):
