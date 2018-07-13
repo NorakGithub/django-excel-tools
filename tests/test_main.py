@@ -16,7 +16,7 @@ class TestSerializer(unittest.TestCase):
         workbook = Workbook()
         self.worksheet = workbook.active
         self.worksheet['A1'] = 'Field name 1'
-        self.worksheet['B2'] = 'Field name 2'
+        self.worksheet['B1'] = 'Field name 2'
         self.worksheet['A2'] = 'value 1'
         self.worksheet['B2'] = 'value 2'
 
@@ -75,16 +75,70 @@ class TestSerializer(unittest.TestCase):
         class Serializer(serializers.ExcelSerializer):
             field_name_1 = serializers.CharField(max_length=10, verbose_name='Field name 1')
             field_name_2 = serializers.CharField(max_length=10, verbose_name='Field name 2')
-            
+
             class Meta:
                 start_index = 1
                 fields = ('field_name_1', 'field_name_2')
-            
+
             def row_extra_validation(self, index, cleaned_row):
                 assert cleaned_row['field_name_1'] == 'value 1'
                 assert cleaned_row['field_name_2'] == 'value 2'
-        
+
         Serializer(self.worksheet)
+
+    def test_should_fail_if_sheet_has_more_fields_than_serializer(self):
+        self.worksheet['C1'] = 'Field Name 3'
+        self.worksheet['C2'] = 'Value 3'
+
+        class Serializer(serializers.ExcelSerializer):
+            field_name_1 = serializers.CharField(max_length=10, verbose_name='Field name 1')
+            field_name_2 = serializers.CharField(max_length=10, verbose_name='Field name 2')
+
+            class Meta:
+                start_index = 1
+                fields = ('field_name_1', 'field_name_2')
+
+        serializer = Serializer(self.worksheet)
+        self.assertEqual(self.worksheet.max_column, 3)
+        self.assertNotEqual(self.worksheet.max_column, len(serializer.fields))
+        self.assertEqual(serializer.errors[0],
+                         'Required 2 fields, but given excel has 3 fields, amount of field should be the same. '
+                         '[Tip] You might select the wrong excel format.'
+                         )
+
+    def test_should_ignore_if_worksheet_has_blank_excess_columns(self):
+        self.worksheet['C1'] = ''
+        self.worksheet['D1'] = ''
+        self.worksheet['E1'] = ''
+
+        class Serializer(serializers.ExcelSerializer):
+            field_name_1 = serializers.CharField(max_length=10, verbose_name='Field name 1')
+            field_name_2 = serializers.CharField(max_length=10, verbose_name='Field name 2')
+
+            class Meta:
+                start_index = 1
+                fields = ('field_name_1', 'field_name_2')
+
+        serializer = Serializer(self.worksheet)
+        self.assertFalse(serializer.errors)
+
+    def test_should_ignore_if_worksheet_has_blank_excess_rows(self):
+        self.worksheet['A3'] = ''
+        self.worksheet['B3'] = ''
+        self.worksheet['A4'] = ''
+        self.worksheet['B4'] = ''
+
+        class Serializer(serializers.ExcelSerializer):
+            field_name_1 = serializers.CharField(max_length=10, verbose_name='Field name 1')
+            field_name_2 = serializers.CharField(max_length=10, verbose_name='Field name 2')
+
+            class Meta:
+                start_index = 1
+                fields = ('field_name_1', 'field_name_2')
+
+        serializer = Serializer(self.worksheet)
+        self.assertFalse(serializer.errors)
+
 
 class TestField(unittest.TestCase):
 

@@ -70,18 +70,44 @@ class BaseSerializer(object):
             except AttributeError:
                 raise FieldNotExist(message='{} is not defined in class field.'.format(field_name))
 
+    def _get_max_column(self):
+        max_column = 0
+        for col in self.worksheet.columns:
+            values = [cell.value for cell in col]
+            value = values[0]
+            if value == '':
+                continue
+            max_column += 1
+
+        return max_column
+
+    def _get_max_row(self):
+        populated_rows = 0
+        for row in self.worksheet.rows:
+            values = [cell.value for cell in row]
+            if all(value == '' for value in values):
+                continue
+            populated_rows += 1
+        return populated_rows
+
     def _validate_column(self):
-        if self.worksheet.max_column != len(self.fields):
-            raise ColumnNotEqualError(message='Required {} fields, but given excel has {} fields, amount of field '
-                                              'should be the same. [Tip] You might select the wrong excel format.'
-                                      .format(len(self.fields), self.worksheet.max_column))
+        max_column = self._get_max_column()
+        if max_column != len(self.fields):
+            message = ('Required {} fields, but given excel has {} fields, '
+                       'amount of field should be the same. [Tip] You might '
+                       'select the wrong excel format.'
+                       ''.format(len(self.fields), max_column))
+            raise ColumnNotEqualError(message=message)
 
     def _set_values(self):
-        for row_index, row in enumerate(self.worksheet.rows):
+        max_row = self._get_max_row()
+        for row_index, row in enumerate(self.worksheet.iter_rows(max_row=max_row)):
             if row_index < self.start_index:
                 continue
 
             for index, cell in enumerate(row):
+                if index+1 > self._get_max_column():
+                    break
                 key = self.field_names[index]
                 self.fields[key].value = cell.value
                 try:
@@ -94,7 +120,7 @@ class BaseSerializer(object):
                 self.row_extra_validation(row_index + 1, cleaned_row)
             except ValidationError as error:
                 self.errors.append(error.message)
-            
+
             self._reset_fields_value()
 
     def _reset_fields_value(self):
