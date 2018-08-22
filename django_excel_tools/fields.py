@@ -73,7 +73,7 @@ class BaseField(object):
                 message=error_message
             ))
 
-    def _choice_validation_helper(self, index, value, choices, case_sensitive):
+    def _choice_validation_helper(self, index, value, choices, case_sensitive=True):
         # Check if choices has duplication
         if len(choices) != len(set(choices)):
             raise SerializerConfigError(message='Choice has duplication.')
