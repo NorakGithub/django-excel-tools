@@ -72,23 +72,22 @@ class BaseSerializer(object):
 
     def _get_max_column(self):
         max_column = 0
-        for col in self.worksheet.columns:
-            values = [cell.value for cell in col]
-            value = values[0]
-            if value == '':
+        row = 1
+        for col in self.worksheet[row]:
+            if col.value == '':
                 continue
             max_column += 1
 
         return max_column
 
     def _get_max_row(self):
-        populated_rows = 0
+        max_row = 0
         for row in self.worksheet.rows:
             values = [cell.value for cell in row]
             if all(value == '' for value in values):
-                continue
-            populated_rows += 1
-        return populated_rows
+                break
+            max_row += 1
+        return max_row
 
     def _validate_column(self):
         max_column = self._get_max_column()
@@ -101,12 +100,13 @@ class BaseSerializer(object):
 
     def _set_values(self):
         max_row = self._get_max_row()
+        max_colum = self._get_max_column()
         for row_index, row in enumerate(self.worksheet.iter_rows(max_row=max_row)):
             if row_index < self.start_index:
                 continue
 
             for index, cell in enumerate(row):
-                if index+1 > self._get_max_column():
+                if index+1 > max_colum:
                     break
                 key = self.field_names[index]
                 self.fields[key].value = cell.value
