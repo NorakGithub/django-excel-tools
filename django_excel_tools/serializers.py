@@ -84,7 +84,7 @@ class BaseSerializer(object):
         max_row = 0
         for row in self.worksheet.rows:
             values = [cell.value for cell in row]
-            if all(value == '' for value in values):
+            if all(value == '' or value is None for value in values):
                 break
             max_row += 1
         return max_row
