@@ -112,9 +112,13 @@ class BaseSerializer(object):
                 self.fields[key].value = cell.value
                 try:
                     self.fields[key].validate(index=row_index + 1)
+                    self.extra_clean_validate(key)
                 except ValidationError as error:
-                    self.errors.append(error.message)
-
+                    message = u'[Row {index}] {message}'.format(
+                        index=row_index + 1,
+                        message=error.message
+                    )
+                    self.errors.append(message)
             cleaned_row = self._set_cleaned_values(self.fields)
             try:
                 self.row_extra_validation(row_index + 1, cleaned_row)
@@ -122,6 +126,23 @@ class BaseSerializer(object):
                 self.errors.append(error.message)
 
             self._reset_fields_value()
+
+    def extra_clean_validate(self, key):
+        try:
+            extra_clean = 'extra_clean_{}'.format(key)
+            extra_clean_def = getattr(self, extra_clean)
+            if callable(extra_clean_def):
+                validated_field = self.fields[key]
+                cleaned_value = validated_field.cleaned_value
+                extra_clean_def(cleaned_value)
+        except AttributeError:
+            pass
+        except ValidationError as error:
+            message = u'{verbose_name} {message}'.format(
+                verbose_name=validated_field.verbose_name,
+                message=error.message
+            )
+            raise ValidationError(message=message)
 
     def _reset_fields_value(self):
         for key in self.field_names:
@@ -131,13 +152,6 @@ class BaseSerializer(object):
         cleaned_row = {}
         for key in validated_fields:
             cleaned_value = validated_fields[key].cleaned_value
-            try:
-                extra_clean = 'extra_clean_{}'.format(key)
-                extra_clean_def = getattr(self, extra_clean)
-                if callable(extra_clean_def):
-                    cleaned_value = extra_clean_def(cleaned_value)
-            except AttributeError:
-                pass
             cleaned_row[key] = cleaned_value
         self.cleaned_data.append(cleaned_row)
         return cleaned_row
