@@ -114,8 +114,9 @@ class BaseSerializer(object):
                     self.fields[key].validate(index=row_index + 1)
                     self.extra_clean_validate(key)
                 except ValidationError as error:
-                    message = u'[Row {index}] {message}'.format(
+                    message = BASE_MESSAGE.format(
                         index=row_index + 1,
+                        verbose_name=self.fields[key].verbose_name,
                         message=error.message
                     )
                     self.errors.append(message)
@@ -137,12 +138,6 @@ class BaseSerializer(object):
                 extra_clean_def(cleaned_value)
         except AttributeError:
             pass
-        except ValidationError as error:
-            message = u'{verbose_name} {message}'.format(
-                verbose_name=validated_field.verbose_name,
-                message=error.message
-            )
-            raise ValidationError(message=message)
 
     def _reset_fields_value(self):
         for key in self.field_names:
