@@ -135,7 +135,7 @@ class BaseSerializer(object):
             if callable(extra_clean_def):
                 validated_field = self.fields[key]
                 cleaned_value = validated_field.cleaned_value
-                extra_clean_def(cleaned_value)
+                self.fields[key].cleaned_value = extra_clean_def(cleaned_value)
         except AttributeError:
             pass
 

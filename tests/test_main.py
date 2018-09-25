@@ -6,7 +6,7 @@ import datetime
 from openpyxl import Workbook
 
 from django_excel_tools import serializers
-from django_excel_tools.exceptions import ColumnNotEqualError, FieldNotExist
+from django_excel_tools.exceptions import FieldNotExist, ValidationError
 from tests.workbook import WorkbookTesting, OrderExcelSerializer
 
 
@@ -15,10 +15,8 @@ class TestSerializer(unittest.TestCase):
     def setUp(self):
         workbook = Workbook()
         self.worksheet = workbook.active
-        self.worksheet['A1'] = 'Field name 1'
-        self.worksheet['B1'] = 'Field name 2'
-        self.worksheet['A2'] = 'value 1'
-        self.worksheet['B2'] = 'value 2'
+        self.worksheet.append(['Field name 1', 'Field name 2'])
+        self.worksheet.append(['value 1', 'value 2'])
 
     def test_should_field_when_no_class_meta(self):
         class Serializer(serializers.ExcelSerializer):
@@ -138,6 +136,50 @@ class TestSerializer(unittest.TestCase):
 
         serializer = Serializer(self.worksheet)
         self.assertFalse(serializer.errors)
+
+    def test_extra_clean_should_raise_validation_error(self):
+        class Serializer(serializers.ExcelSerializer):
+            field_name_1 = serializers.CharField(max_length=10,
+                                                 verbose_name='Field name 1')
+            field_name_2 = serializers.CharField(max_length=10,
+                                                 verbose_name='Field name 2')
+
+            class Meta:
+                start_index = 1
+                fields = ('field_name_1', 'field_name_2')
+
+            def extra_clean_field_name_2(self, value):
+                if value == 'value 2':
+                    raise ValidationError('This value is not excepted.')
+
+        self.worksheet.append(['value 3', 'value 3'])
+        serializer = Serializer(self.worksheet)
+        self.assertIsNotNone(serializer.errors)
+        self.assertEqual(len(serializer.errors), 1)
+
+    def test_extra_clean_should_change_the_value(self):
+        expected_value = 'Succeed'
+
+        class Serializer(serializers.ExcelSerializer):
+            field_name_1 = serializers.CharField(max_length=10,
+                                                 verbose_name='Field name 1')
+            field_name_2 = serializers.CharField(max_length=10,
+                                                 verbose_name='Field name 2')
+
+            class Meta:
+                start_index = 1
+                fields = ('field_name_1', 'field_name_2')
+
+            def extra_clean_field_name_2(self, value):
+                if value == 'value 3':
+                    raise ValidationError('This value is not excepted.')
+                return expected_value
+
+        self.worksheet.append(['value', 'value temp'])
+        serializer = Serializer(self.worksheet)
+        self.assertEqual(serializer.errors, [])
+        self.assertEqual(serializer.cleaned_data[0]['field_name_2'], expected_value)
+        self.assertEqual(serializer.cleaned_data[1]['field_name_2'], expected_value)
 
 
 class TestField(unittest.TestCase):
