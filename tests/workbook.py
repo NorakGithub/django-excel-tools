@@ -13,7 +13,7 @@ class OrderExcelSerializer(serializers.ExcelSerializer):
     ACTIVE_CHOICES = ('Yes', 'No')
 
     shop_name = serializers.CharField(max_length=10, verbose_name='Shop Name')
-    order_number = serializers.CharField(max_length=10, verbose_name='Order Number')
+    order_number = serializers.CharField(max_length=20, verbose_name='Order Number')
     quantity = serializers.IntegerField(verbose_name='Quantity')
     sale_datetime = serializers.DateField(
         verbose_name='Sale Datetime', date_format='%Y-%m-%d', date_format_verbose='YYYY-MM-DD'

@@ -254,7 +254,7 @@ class TestField(unittest.TestCase):
         self.assertTrue(serializer.errors)
 
     def test_invalid_integer(self):
-        self.basic_data[1] = 'Not Integer'
+        self.basic_data[3] = 'Not Integer'
         self.worksheet.append(self.basic_data)
         serializer = OrderExcelSerializer(self.worksheet)
         self.assertTrue(serializer.errors)
@@ -282,6 +282,7 @@ class TestResult(unittest.TestCase):
 
     def test_result(self):
         order_serializer = OrderExcelSerializer(self.worksheet)
+        self.assertEqual(order_serializer.errors, [], order_serializer.errors)
         data = order_serializer.cleaned_data
         first_row = data[0]
         self.assertEqual(first_row['shop_name'], 'Shop A')

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import logging
 from collections import OrderedDict
 
 import datetime
@@ -9,6 +10,9 @@ import sys
 from .exceptions import ValidationError, ColumnNotEqualError, FieldNotExist, ImportOperationFailed, \
     SerializerConfigError
 from .fields import BaseField, BASE_MESSAGE, DigitBaseField, BaseDateTimeField
+
+
+log = logging.getLogger('django_excel_tools')
 
 
 class BaseSerializer(object):
@@ -100,26 +104,38 @@ class BaseSerializer(object):
 
     def _set_values(self):
         max_row = self._get_max_row()
-        max_colum = self._get_max_column()
+        max_column = self._get_max_column()
+        log.debug('Excel max row: {}'.format(max_row))
+        log.debug('Excel max column: {}'.format(max_column))
+
         for row_index, row in enumerate(self.worksheet.iter_rows(max_row=max_row)):
             if row_index < self.start_index:
                 continue
 
             for index, cell in enumerate(row):
-                if index+1 > max_colum:
+                if index+1 > max_column:
                     break
                 key = self.field_names[index]
                 self.fields[key].value = cell.value
                 try:
                     self.fields[key].validate(index=row_index + 1)
-                    self.extra_clean_validate(key)
+                    extra_cleaned = self._extra_clean_validate(key)
+                    if extra_cleaned is not None:
+                        self.fields[key].cleaned_value = extra_cleaned
                 except ValidationError as error:
                     message = BASE_MESSAGE.format(
                         index=row_index + 1,
                         verbose_name=self.fields[key].verbose_name,
                         message=error.message
                     )
+                    log.error(BASE_MESSAGE)
                     self.errors.append(message)
+                    self._reset_fields_value()
+                    continue
+
+            if self.errors:
+                continue
+
             cleaned_row = self._set_cleaned_values(self.fields)
             try:
                 self.row_extra_validation(row_index + 1, cleaned_row)
@@ -128,16 +144,19 @@ class BaseSerializer(object):
 
             self._reset_fields_value()
 
-    def extra_clean_validate(self, key):
+    def _extra_clean_validate(self, key):
         try:
             extra_clean = 'extra_clean_{}'.format(key)
             extra_clean_def = getattr(self, extra_clean)
-            if callable(extra_clean_def):
-                validated_field = self.fields[key]
-                cleaned_value = validated_field.cleaned_value
-                self.fields[key].cleaned_value = extra_clean_def(cleaned_value)
         except AttributeError:
-            pass
+            return
+
+        if not callable(extra_clean_def):
+            return
+
+        validated_field = self.fields[key]
+        cleaned_value = validated_field.cleaned_value
+        return extra_clean_def(cleaned_value)
 
     def _reset_fields_value(self):
         for key in self.field_names:
