@@ -43,9 +43,12 @@ class BaseSerializer(object):
 
         self._set_values()
         if not self.errors:
+            log.info('No error, notifying with function validated().')
             self.validated()
+            log.info('Starting import operation.')
             self._start_operation()
         else:
+            log.info('Error existed, notifying with function invalid().')
             self.invalid(self.errors)
 
     def _class_meta_validation(self):
@@ -105,8 +108,9 @@ class BaseSerializer(object):
     def _set_values(self):
         max_row = self._get_max_row()
         max_column = self._get_max_column()
-        log.debug('Excel max row: {}'.format(max_row))
-        log.debug('Excel max column: {}'.format(max_column))
+        log.info('Start validating operation')
+        log.info('Excel max row: {}'.format(max_row))
+        log.info('Excel max column: {}'.format(max_column))
 
         for row_index, row in enumerate(self.worksheet.iter_rows(max_row=max_row)):
             if row_index < self.start_index:
@@ -128,7 +132,7 @@ class BaseSerializer(object):
                         verbose_name=self.fields[key].verbose_name,
                         message=error.message
                     )
-                    log.error(BASE_MESSAGE)
+                    log.error(message)
                     self.errors.append(message)
                     self._reset_fields_value()
                     continue
