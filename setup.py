@@ -5,18 +5,18 @@
 
 from setuptools import setup, find_packages
 
-with open('README.rst') as readme_file:
+with open('README.md') as readme_file:
     readme = readme_file.read()
 
-with open('HISTORY.rst') as history_file:
-    history = history_file.read()
+with open('CHANGELOG.md') as changelog_file:
+    changelog = changelog_file.read()
 
 setup(
     name='django_excel_tools',
     version_format='{tag}',
     setup_requires=['setuptools-git-version'],
     description="Common function when working with excel.",
-    long_description=readme + '\n\n' + history,
+    long_description=readme + '\n\n' + changelog,
     author="Khemanorak Khath",
     author_email='khath.khemanorak@gmail.com',
     url='https://github.com/NorakGithub/django_excel_tools',

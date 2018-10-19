@@ -3,150 +3,148 @@
 import logging
 from collections import OrderedDict
 
-import datetime
-
-import sys
-
-from .exceptions import ValidationError, ColumnNotEqualError, FieldNotExist, ImportOperationFailed, \
-    SerializerConfigError
-from .fields import BaseField, BASE_MESSAGE, DigitBaseField, BaseDateTimeField
+from django_excel_tools import exceptions
+from django_excel_tools.fields import (
+    BASE_MESSAGE, BooleanField, CharField, IntegerField, DateField,
+    DateTimeField
+)
 
 
-log = logging.getLogger('django_excel_tools')
+log = logging.getLogger(__name__)
+
+
+class SerializerMeta:
+
+    def __init__(self, meta):
+        assert meta is not None, 'Meta cannot be None.'
+
+        assert hasattr(meta, 'start_index'), 'Meta.start_index is required.'
+        assert meta.start_index, 'Value cannot be int positive.'
+        assert type(meta.start_index) is int, 'Must be int.'
+        self.start_index = meta.start_index
+
+        assert hasattr(meta, 'fields'), 'Meta.fields is required.'
+        assert meta.fields, 'Must not empty or None.'
+        assert type(meta.fields) in [list, tuple], 'Must be iteratable type list or tuple.'
+        self.fields = meta.fields
+
+        if hasattr(meta, 'enable_transaction'):
+            assert type(meta.enable_transaction) in [None, bool], 'Type must be bool.'
+        self.enable_transaction = getattr(meta, 'enable_transaction', True)
 
 
 class BaseSerializer(object):
 
     def __init__(self, worksheet, **kwargs):
         self.kwargs = kwargs
-        self._class_meta_validation()
+        self.meta = SerializerMeta(getattr(self, 'Meta', None))
 
-        self.class_fields = [field for field in dir(self)
-                             if not (field.startswith("__") or field.startswith("_"))
-                             and not callable(getattr(self, field))]
-        assert self.class_fields, 'There no fields added to class.'
+        self.field_names = self.meta.fields
+        self.start_index = self.meta.start_index
+        self.class_fields = self._get_class_fields()
+        self.fields = self._get_fields()
 
-        self.errors = []
         self.operation_errors = []
-        self.cleaned_data = []
-        self.fields = OrderedDict()
         self.worksheet = worksheet
 
-        self._set_fields()
-
-        try:
-            self._validate_column()
-        except ColumnNotEqualError as e:
-            self.errors.append(e.message)
-            self.invalid([e.message])
-            return
-
-        self._set_values()
-        if not self.errors:
-            log.info('No error, notifying with function validated().')
+        validation_errors, cleaned_data = self._proceed_serialize_excel_data()
+        self.validation_errors = validation_errors
+        self.cleaned_data = cleaned_data
+        if validation_errors:
+            self.invalid(validation_errors)
+        else:
             self.validated()
-            log.info('Starting import operation.')
             self._start_operation()
-        else:
-            log.info('Error existed, notifying with function invalid().')
-            self.invalid(self.errors)
 
-    def _class_meta_validation(self):
-        assert hasattr(self, 'Meta'), 'class Meta is required'
+    def _get_class_fields(self):
+        """
+        Get all class field (variable) defined
+        :return:
+        """
+        fields = [
+            field for field in dir(self)
+            if not (field.startswith("__") or field.startswith("_"))
+            and not callable(getattr(self, field))
+        ]
+        assert fields, 'There is no fields added to class'
+        return fields
 
-        assert hasattr(self.Meta, 'start_index'), 'Meta.start_index in class Meta is required.'
-        assert type(self.Meta.start_index) is int, 'Meta.start_index type is int.'
-
-        assert hasattr(self.Meta, 'fields'), 'Meta.fields in class Meta is required.'
-        fields_is_list_or_tuple = type(self.Meta.fields) is list or type(self.Meta.fields) is tuple
-        assert fields_is_list_or_tuple, 'Meta.fields type must be either list or tuple.'
-
-        if hasattr(self.Meta, 'enable_django_transaction'):
-            assert type(self.Meta.enable_django_transaction) is bool, 'Meta.enable_django_transaction is bool type.'
-            self.enable_django_transaction = self.Meta.enable_django_transaction
-        else:
-            self.enable_django_transaction = True
-
-        self.field_names = self.Meta.fields
-        self.start_index = self.Meta.start_index
-
-    def _set_fields(self):
-        for field_name in self.field_names:
+    def _get_fields(self):
+        """
+        Assigning class object to dictionary
+        :return:
+        """
+        fields = OrderedDict()
+        for name in self.field_names:
             try:
-                self.fields[field_name] = getattr(self, field_name)
+                fields[name] = getattr(self, name)
             except AttributeError:
-                raise FieldNotExist(message='{} is not defined in class field.'.format(field_name))
+                message = '{} is not defined in class field'.format(name)
+                raise exceptions.FieldNotExist(message=message)
+        return fields
 
-    def _get_max_column(self):
-        max_column = 0
-        row = 1
-        for col in self.worksheet[row]:
-            if col.value == '':
-                continue
-            max_column += 1
-
-        return max_column
-
-    def _get_max_row(self):
-        max_row = 0
-        for row in self.worksheet.rows:
-            values = [cell.value for cell in row]
-            if all(value == '' or value is None for value in values):
-                break
-            max_row += 1
-        return max_row
-
-    def _validate_column(self):
-        max_column = self._get_max_column()
-        if max_column != len(self.fields):
-            message = ('Required {} fields, but given excel has {} fields, '
-                       'amount of field should be the same. [Tip] You might '
-                       'select the wrong excel format.'
-                       ''.format(len(self.fields), max_column))
-            raise ColumnNotEqualError(message=message)
-
-    def _set_values(self):
-        max_row = self._get_max_row()
-        max_column = self._get_max_column()
-        log.info('Start validating operation')
-        log.info('Excel max row: {}'.format(max_row))
-        log.info('Excel max column: {}'.format(max_column))
-
-        for row_index, row in enumerate(self.worksheet.iter_rows(max_row=max_row)):
+    def _proceed_serialize_excel_data(self):
+        max_column = len(self.fields)
+        validation_errors = []
+        cleaned_data = []
+        for row_index, row in enumerate(self.worksheet):
+            # Ignore row that not yet start data gathering
             if row_index < self.start_index:
                 continue
+            if self._is_last_row(row, max_column):
+                break
+            cleaned_row = {}
 
-            for index, cell in enumerate(row):
-                if index+1 > max_column:
-                    break
-                key = self.field_names[index]
-                self.fields[key].value = cell.value
+            for col_index, cell in enumerate(row):
+                if col_index >= max_column:
+                    continue
+                key = self.field_names[col_index]
+                field_object = self.fields[key]
+                field_object.value = cell.value
                 try:
-                    self.fields[key].validate(index=row_index + 1)
-                    extra_cleaned = self._extra_clean_validate(key)
-                    if extra_cleaned is not None:
-                        self.fields[key].cleaned_value = extra_cleaned
-                except ValidationError as error:
+                    field_object.validate(index=row_index + 1)
+                    extra_clean_value = self._extra_clean_validate(key)
+                    if extra_clean_value is not None:
+                        field_object.cleaned_value = extra_clean_value
+                except exceptions.ValidationError as error:
                     message = BASE_MESSAGE.format(
                         index=row_index + 1,
                         verbose_name=self.fields[key].verbose_name,
-                        message=error.message
+                        message=error.message,
                     )
-                    log.error(message)
-                    self.errors.append(message)
-                    self._reset_fields_value()
+                    validation_errors.append(message)
+                    field_object.reset()
                     continue
 
-            if self.errors:
+                cleaned_row[key] = field_object.cleaned_value
+                field_object.reset()
+
+            if validation_errors:
                 continue
 
-            cleaned_row = self._set_cleaned_values(self.fields)
             try:
-                self.row_extra_validation(row_index + 1, cleaned_row)
-            except ValidationError as error:
-                self.errors.append(error.message)
+                self.row_extra_validation(row_index, cleaned_row)
+            except exceptions.ValidationError as error:
+                message = BASE_MESSAGE.format(
+                    index=row_index + 1,
+                    verbose_name='',
+                    error=error.message,
+                )
+                validation_errors.append(message)
+                continue
 
-            self._reset_fields_value()
+            cleaned_data.append(cleaned_row)
+
+        return validation_errors, cleaned_data
+
+    def _is_last_row(self, row, max_column):
+        none_cell = []
+        for index, cell in enumerate(row):
+            if index + 1 > max_column:
+                break
+            if cell.value in [None, u'', '']:
+                none_cell.append(cell)
+        return len(none_cell) >= max_column
 
     def _extra_clean_validate(self, key):
         try:
@@ -162,37 +160,27 @@ class BaseSerializer(object):
         cleaned_value = validated_field.cleaned_value
         return extra_clean_def(cleaned_value)
 
-    def _reset_fields_value(self):
-        for key in self.field_names:
-            self.fields[key].reset()
-
-    def _set_cleaned_values(self, validated_fields):
-        cleaned_row = {}
-        for key in validated_fields:
-            cleaned_value = validated_fields[key].cleaned_value
-            cleaned_row[key] = cleaned_value
-        self.cleaned_data.append(cleaned_row)
-        return cleaned_row
-
     def _start_operation(self):
-        if self.enable_django_transaction:
+        if self.meta.enable_transaction:
             try:
                 self.import_operation(self.cleaned_data)
                 self.operation_success()
-            except ImportOperationFailed:
+            except exceptions.ImportOperationFailed:
                 self.operation_failed(self.operation_errors)
             return
 
         try:
             from django.db import transaction
         except ImportError:
-            raise SerializerConfigError(message='Django is required, please make sure you installed Django via pip.')
+            message = 'Django is required, please make sure you installed ' \
+                      'Django via pip.'
+            raise exceptions.SerializerConfigError(message=message)
 
         try:
             with transaction.atomic():
                 self.import_operation(self.cleaned_data)
             self.operation_success()
-        except ImportOperationFailed:
+        except exceptions.ImportOperationFailed:
             self.operation_failed(self.operation_errors)
 
     def import_operation(self, cleaned_data):
@@ -219,93 +207,7 @@ class ExcelSerializer(BaseSerializer):
     def gen_error(self, index, error):
         # + 1 to make it equal to sheet index
         sheet_index = self.start_index + index + 1
-        return '[Row {sheet_index}] {error}'.format(sheet_index=sheet_index, error=error)
-
-
-class BooleanField(BaseField):
-
-    def __init__(self, verbose_name):
-        super(BooleanField, self).__init__(verbose_name=verbose_name, blank=True, default=False)
-
-    def validate_specific_data_type(self, validating_value, index):
-        return True if validating_value else False
-
-
-class CharField(BaseField):
-
-    def __init__(self, max_length, verbose_name, convert_number=True, blank=False, choices=None, default=None, case_sensitive=True):
-        super(CharField, self).__init__(verbose_name, blank, default)
-        self.max_length = max_length
-        self.convert_number = convert_number
-        self.choices = choices
-        self.case_sensitive = case_sensitive
-
-    def validate_specific_data_type(self, validating_value, index):
-        str_type = str if sys.version_info >= (3, 0) else unicode
-        if self.convert_number:
-            validating_value = str_type(validating_value)
-
-        type_error_message = BASE_MESSAGE.format(
-            index=index,
-            verbose_name=self.verbose_name,
-            message='must be text.'
+        return '[Row {sheet_index}] {error}'.format(
+            sheet_index=sheet_index,
+            error=error
         )
-
-        str_types = [str]
-        if sys.version_info <= (3, 0):
-            str_types.append(unicode)
-
-        if type(validating_value) not in str_types:
-            raise ValidationError(message=type_error_message)
-
-        if len(validating_value) > self.max_length:
-            raise ValidationError(message=BASE_MESSAGE.format(
-                index=index,
-                verbose_name=self.verbose_name,
-                message='cannot be more than {} characters'.format(self.max_length)
-            ))
-
-        if self.choices:
-            self._choice_validation_helper(index, validating_value, self.choices, self.case_sensitive)
-
-        return validating_value
-
-
-class IntegerField(DigitBaseField):
-
-    def validate_specific_data_type(self, validating_value, index):
-        try:
-            validating_value = int(validating_value)
-        except ValueError:
-            raise ValidationError(message=BASE_MESSAGE.format(
-                index=index,
-                verbose_name=self.verbose_name,
-                message='cannot convert {} to number.'.format(validating_value)
-            ))
-
-        if self.choices:
-            self._choice_validation_helper(index, validating_value, self.choices)
-
-        return validating_value
-
-
-class DateField(BaseDateTimeField):
-
-    def validate_specific_data_type(self, validating_value, index):
-        validating_value = self.convert_int_to_str(validating_value)
-        if type(validating_value) is datetime.datetime:
-            return validating_value.date()
-
-        validating_value = self.convert_datetime(validating_value, index)
-        return validating_value.date() if validating_value is not None else validating_value
-
-
-class DateTimeField(BaseDateTimeField):
-
-    def validate_specific_data_type(self, validating_value, index):
-        validating_value = self.convert_int_to_str(validating_value)
-        if type(validating_value) is datetime.datetime:
-            return validating_value
-
-        validating_value = self.convert_datetime(validating_value, index)
-        return validating_value if validating_value is not None else validating_value
