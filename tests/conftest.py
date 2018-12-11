@@ -1,6 +1,9 @@
+import os
+
+
 def pytest_configure():
     from django.conf import settings
-
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     settings.configure(
         DEBUG_PROPAGATE_EXCEPTIONS=True,
         DATABASES={
@@ -13,6 +16,9 @@ def pytest_configure():
         SECRET_KEY='not very secret in tests',
         USE_I18N=True,
         USE_L10N=True,
+        LOCALE_PATHS=[
+            BASE_DIR + '/django_excel_tools/locale',
+        ],
         STATIC_URL='/static/',
         ROOT_URLCONF='tests.urls',
         TEMPLATE_LOADERS=(
