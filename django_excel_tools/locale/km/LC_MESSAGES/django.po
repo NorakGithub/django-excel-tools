@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-12-11 23:14+0700\n"
+"POT-Creation-Date: 2018-12-12 01:22+0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,42 +19,48 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 
 # Example: [Row 5] Shop Name is not allow to be blank.
-#: fields.py:14
-#, python-format
-msgid "[Row %(index)s] %(verbose_name)s %(message)s"
-msgstr "[បន្ទាត់ទី %(index)s] %(verbose_name)s %(message)s"
-
-# Example: [Row 5] Shop Name is not allow to be blank.
-#: fields.py:45
+#: fields.py:41
 msgid "is not allow to be blank."
 msgstr "មិនអាចទទេបាន។"
 
 # Example: [Row 5] Active true is not correct, it must has one of these Yes, No.
-#: fields.py:92
+#: fields.py:86
 #, python-format
 msgid "%(value)s is not correct, it must has one of these %(choices)s."
-msgstr "%(value)s មានតម្លៃមិនត្រឹមត្រូវតាមប្រព័ន្ធត្រូវការ តម្លៃដែរប្រព័ន្ធអាចទទួលបានគឺ %(choices)s។"
+msgstr ""
+"%(value)s មានតម្លៃមិនត្រឹមត្រូវតាមប្រព័ន្ធត្រូវការ តម្លៃដែរប្រព័ន្ធអាចទទួលបានគឺ %(choices)s។"
 
 # Example: [Row 5] 10/10/2018 is incorrect format, it should be YYYY-MM-DD.
-#: fields.py:130
+#: fields.py:125
 #, python-format
 msgid ""
 "\"%(value)s\" is incorrect format, it should be \"%(date_format_verbose)s\"."
-msgstr "\"%(value)s\" មានទម្រង់មិនត្រឹមត្រូវ។ ទម្រង់ដែលត្រឹមត្រូវគឺ \"%(date_format_verbose)s\"."
+msgstr ""
+"\"%(value)s\" មានទម្រង់មិនត្រឹមត្រូវ។ ទម្រង់ដែលត្រឹមត្រូវគឺ \"%(date_format_verbose)s\"."
 
-#: fields.py:171
+#: fields.py:164
 msgid "must be text."
 msgstr "ត្រូវតែជាអក្សប៉ុន្នោះ។"
 
+#: fields.py:175
+#, python-format
+msgid "cannot be more than %(length)s character."
+msgstr "មិនអាចច្រើនជាង %(length)s តួអក្ស។"
+
 # Example: [Row 5] Price cannot convert ABC to number.
-#: fields.py:201
+#: fields.py:195
 #, python-format
 msgid "cannot convert %(value)s to number."
 msgstr "មិនអាចប្រែរ %(value)s ទៅជាតួលេខបាន។"
 
 # Example: [Row 5] unexpected error.
-#: serializers.py:216
+#: serializers.py:213
 #, python-format
 msgid "[Row %(index)s] %(error)s"
 msgstr "[បន្ទាត់ទី %(index)s] %(error)s"
 
+# Example: [Row 5] Shop Name is not allow to be blank.
+#: utils.py:11
+#, ptython-format
+msgid "[Row %(index)s] %(verbose_name)s %(msg)s"
+msgstr "[បន្ទាត់ទី %(index)s] %(verbose_name)s %(msg)s"
