@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-12-12 01:22+0700\n"
+"POT-Creation-Date: 2018-12-12 02:26+0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -53,14 +53,23 @@ msgstr "មិនអាចច្រើនជាង %(length)s តួអក្ស
 msgid "cannot convert %(value)s to number."
 msgstr "មិនអាចប្រែរ %(value)s ទៅជាតួលេខបាន។"
 
+#: serializers.py:103
+#, python-format
+msgid ""
+"This import required %(required_num)s columns but excel only has "
+"%(excel_num)s columns."
+msgstr ""
+"ការនាំចូលទិន្នន័យតម្រូវអោយមាន %(required_num)s ជួរឈរ ប៉ុន្តែក្នុងអេចសេលមានតែ "
+"%(excel_num)s ជួរឈរ។"
+
 # Example: [Row 5] unexpected error.
-#: serializers.py:213
+#: serializers.py:226
 #, python-format
 msgid "[Row %(index)s] %(error)s"
 msgstr "[បន្ទាត់ទី %(index)s] %(error)s"
 
 # Example: [Row 5] Shop Name is not allow to be blank.
 #: utils.py:11
-#, ptython-format
+#, python-format
 msgid "[Row %(index)s] %(verbose_name)s %(msg)s"
 msgstr "[បន្ទាត់ទី %(index)s] %(verbose_name)s %(msg)s"
