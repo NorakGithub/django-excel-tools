@@ -1,12 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import sys
-
 import datetime
 
 from .exceptions import ValidationError, SerializerConfigError
 
-BASE_MESSAGE = u'[Row {index}] {verbose_name} {message}'
+try:
+    from django.utils.translation import ugettext as _
+except ImportError:
+    raise SerializerConfigError('Django is required. Please make sure you '
+                                'have install via pip.')
+
+BASE_MESSAGE = _('[Row %(index)s] %(verbose_name)s %(message)s')
 
 
 class BaseField(object):
@@ -34,11 +39,12 @@ class BaseField(object):
     def validate_blank(self, validating_value, index):
         blank_values = ['', None]
         if not self.blank and validating_value in blank_values:
-            raise ValidationError(message=BASE_MESSAGE.format(
-                index=index,
-                verbose_name=self.verbose_name,
-                message='is not allow to be blank.'
-            ))
+            msg = BASE_MESSAGE % {
+                "index": index,
+                "verbose_name": self.verbose_name,
+                "message": _('is not allow to be blank.')
+            }
+            raise ValidationError(message=msg)
 
         if self.blank and validating_value in blank_values and self.default is not None:
             return self.default
@@ -84,10 +90,11 @@ class BaseField(object):
 
         if value not in choices:
             choices = u', '.join(choices)
+            msg = _('%(value)s is not correct, it must has one of these %(choices)s.')
             raise ValidationError(message=BASE_MESSAGE.format(
                 index=index,
                 verbose_name=self.verbose_name,
-                message=u'{} is not correct, it must has one of these {}.'.format(value, choices)
+                message=msg % {'value': value, 'choices': choices}
             ))
 
     def __repr__(self):
@@ -120,10 +127,12 @@ class BaseDateTimeField(BaseField):
         try:
             return datetime.datetime.strptime(validating_value, self.date_format)
         except ValueError:
+            data = {'value': validating_value, 'verbose': self.date_format_verbose}
+            message = _('"%(value)s" is incorrect format, it should be "%(date_format_verbose)s".')
             raise ValidationError(message=BASE_MESSAGE.format(
                 index=index,
                 verbose_name=self.verbose_name,
-                message='"{}" is incorrect format, it should be "{}".'.format(validating_value, self.date_format)
+                message=message % data
             ))
 
     @staticmethod
@@ -160,7 +169,7 @@ class CharField(BaseField):
         type_error_message = BASE_MESSAGE.format(
             index=index,
             verbose_name=self.verbose_name,
-            message='must be text.'
+            message=_('must be text.')
         )
 
         str_types = [str]
@@ -171,10 +180,11 @@ class CharField(BaseField):
             raise ValidationError(message=type_error_message)
 
         if len(validating_value) > self.max_length:
+            msg = 'cannot be more than %(length)s character.'
             raise ValidationError(message=BASE_MESSAGE.format(
                 index=index,
                 verbose_name=self.verbose_name,
-                message='cannot be more than {} characters'.format(self.max_length)
+                message=msg % {'length': self.max_length}
             ))
 
         if self.choices:
@@ -189,10 +199,11 @@ class IntegerField(DigitBaseField):
         try:
             validating_value = int(validating_value)
         except ValueError:
+            msg = _('cannot convert %(value)s to number.') % {'value': validating_value}
             raise ValidationError(message=BASE_MESSAGE.format(
                 index=index,
                 verbose_name=self.verbose_name,
-                message='cannot convert {} to number.'.format(validating_value)
+                message=msg
             ))
 
         if self.choices:

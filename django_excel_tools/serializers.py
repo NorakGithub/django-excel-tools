@@ -8,6 +8,12 @@ from django_excel_tools.fields import (
     BASE_MESSAGE, BooleanField, CharField, IntegerField, DateField,
     DateTimeField
 )
+try:
+    from django.utils.translation import ugettext as _
+except ImportError:
+    raise exceptions.SerializerConfigError(
+        'Django is required. Please make sure you have install via pip.'
+    )
 
 
 log = logging.getLogger(__name__)
@@ -207,7 +213,4 @@ class ExcelSerializer(BaseSerializer):
     def gen_error(self, index, error):
         # + 1 to make it equal to sheet index
         sheet_index = self.start_index + index + 1
-        return '[Row {sheet_index}] {error}'.format(
-            sheet_index=sheet_index,
-            error=error
-        )
+        return _('[Row %(index)s] %(error)s') % {'index': sheet_index, 'error': error}
