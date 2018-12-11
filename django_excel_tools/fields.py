@@ -120,7 +120,7 @@ class BaseDateTimeField(BaseField):
         except ValueError:
             data = {
                 'value': validating_value,
-                'verbose': self.date_format_verbose
+                'date_format_verbose': self.date_format_verbose
             }
             msg = _('"%(value)s" is incorrect format, '
                     'it should be "%(date_format_verbose)s".')
