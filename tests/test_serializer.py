@@ -147,6 +147,24 @@ class TestSerializer(unittest.TestCase):
 
         Serializer(self.worksheet)
 
+    def test_should_fail_if_sheet_has_less_fields_than_serializer(self):
+        class Serializer(serializers.ExcelSerializer):
+            field_1 = serializers.CharField(max_length=10, verbose_name='Field 1')
+            field_2 = serializers.CharField(max_length=10, verbose_name='Field 2')
+            field_3 = serializers.CharField(max_length=10, verbose_name='Field 3')
+
+            class Meta:
+                start_index = 1
+                fields = ('field_1', 'field_2', 'field_3')
+
+        serializer = Serializer(self.worksheet)
+        self.assertTrue(self.worksheet.max_column, 2)
+        self.assertTrue(serializer.validation_errors)
+        self.assertEqual(
+            first=serializer.validation_errors[0],
+            second='This import required 3 columns but excel only has 2 columns.'
+        )
+
     @skip
     def test_should_fail_if_sheet_has_more_fields_than_serializer(self):
         self.worksheet['C1'] = 'Field Name 3'

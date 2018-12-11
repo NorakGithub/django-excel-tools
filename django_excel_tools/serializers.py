@@ -27,7 +27,7 @@ class SerializerMeta:
         assert meta is not None, 'Meta cannot be None.'
 
         assert hasattr(meta, 'start_index'), 'Meta.start_index is required.'
-        assert meta.start_index, 'Value cannot be int positive.'
+        assert meta.start_index is not None, 'Must not be None.'
         assert type(meta.start_index) is int, 'Must be int.'
         self.start_index = meta.start_index
 
@@ -54,12 +54,15 @@ class BaseSerializer(object):
 
         self.operation_errors = []
         self.worksheet = worksheet
+        self.validation_errors = self._validate_columns_less_than_fields()
 
-        validation_errors, cleaned_data = self._proceed_serialize_excel_data()
-        self.validation_errors = validation_errors
-        self.cleaned_data = cleaned_data
-        if validation_errors:
-            self.invalid(validation_errors)
+        if not self.validation_errors:
+            validation_errors, cleaned_data = self._proceed_serialize_excel_data()
+            self.validation_errors = validation_errors
+            self.cleaned_data = cleaned_data
+
+        if self.validation_errors:
+            self.invalid(self.validation_errors)
         else:
             self.validated()
             self._start_operation()
@@ -90,6 +93,16 @@ class BaseSerializer(object):
                 message = '{} is not defined in class field'.format(name)
                 raise exceptions.FieldNotExist(message=message)
         return fields
+
+    def _validate_columns_less_than_fields(self):
+        if self.worksheet.max_column < len(self.fields):
+            data = {
+                'required_num': len(self.fields),
+                'excel_num': self.worksheet.max_column
+            }
+            return [_('This import required %(required_num)s columns but excel'
+                      ' only has %(excel_num)s columns.') % data]
+        return []
 
     def _proceed_serialize_excel_data(self):
         max_column = len(self.fields)
