@@ -5,9 +5,11 @@ from collections import OrderedDict
 
 from django_excel_tools import exceptions
 from django_excel_tools.fields import (
-    BASE_MESSAGE, BooleanField, CharField, IntegerField, DateField,
+    BooleanField, CharField, IntegerField, DateField,
     DateTimeField
 )
+from django_excel_tools.utils import error_trans
+
 try:
     from django.utils.translation import ugettext as _
 except ImportError:
@@ -113,12 +115,7 @@ class BaseSerializer(object):
                     if extra_clean_value is not None:
                         field_object.cleaned_value = extra_clean_value
                 except exceptions.ValidationError as error:
-                    message = BASE_MESSAGE.format(
-                        index=row_index + 1,
-                        verbose_name=self.fields[key].verbose_name,
-                        message=error.message,
-                    )
-                    validation_errors.append(message)
+                    validation_errors.append(error.message)
                     field_object.reset()
                     continue
 
@@ -131,10 +128,10 @@ class BaseSerializer(object):
             try:
                 self.row_extra_validation(row_index, cleaned_row)
             except exceptions.ValidationError as error:
-                message = BASE_MESSAGE.format(
+                message = error_trans(
                     index=row_index + 1,
                     verbose_name='',
-                    error=error.message,
+                    message=error.message
                 )
                 validation_errors.append(message)
                 continue
