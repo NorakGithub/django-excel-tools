@@ -5,9 +5,17 @@ from collections import OrderedDict
 
 from django_excel_tools import exceptions
 from django_excel_tools.fields import (
-    BASE_MESSAGE, BooleanField, CharField, IntegerField, DateField,
+    BooleanField, CharField, IntegerField, DateField,
     DateTimeField
 )
+from django_excel_tools.utils import error_trans
+
+try:
+    from django.utils.translation import ugettext as _
+except ImportError:
+    raise exceptions.SerializerConfigError(
+        'Django is required. Please make sure you have install via pip.'
+    )
 
 
 log = logging.getLogger(__name__)
@@ -19,7 +27,7 @@ class SerializerMeta:
         assert meta is not None, 'Meta cannot be None.'
 
         assert hasattr(meta, 'start_index'), 'Meta.start_index is required.'
-        assert meta.start_index, 'Value cannot be int positive.'
+        assert meta.start_index is not None, 'Must not be None.'
         assert type(meta.start_index) is int, 'Must be int.'
         self.start_index = meta.start_index
 
@@ -46,12 +54,15 @@ class BaseSerializer(object):
 
         self.operation_errors = []
         self.worksheet = worksheet
+        self.validation_errors = self._validate_columns_less_than_fields()
 
-        validation_errors, cleaned_data = self._proceed_serialize_excel_data()
-        self.validation_errors = validation_errors
-        self.cleaned_data = cleaned_data
-        if validation_errors:
-            self.invalid(validation_errors)
+        if not self.validation_errors:
+            validation_errors, cleaned_data = self._proceed_serialize_excel_data()
+            self.validation_errors = validation_errors
+            self.cleaned_data = cleaned_data
+
+        if self.validation_errors:
+            self.invalid(self.validation_errors)
         else:
             self.validated()
             self._start_operation()
@@ -83,6 +94,16 @@ class BaseSerializer(object):
                 raise exceptions.FieldNotExist(message=message)
         return fields
 
+    def _validate_columns_less_than_fields(self):
+        if self.worksheet.max_column < len(self.fields):
+            data = {
+                'required_num': len(self.fields),
+                'excel_num': self.worksheet.max_column
+            }
+            return [_('This import required %(required_num)s columns but excel'
+                      ' only has %(excel_num)s columns.') % data]
+        return []
+
     def _proceed_serialize_excel_data(self):
         max_column = len(self.fields)
         validation_errors = []
@@ -107,12 +128,7 @@ class BaseSerializer(object):
                     if extra_clean_value is not None:
                         field_object.cleaned_value = extra_clean_value
                 except exceptions.ValidationError as error:
-                    message = BASE_MESSAGE.format(
-                        index=row_index + 1,
-                        verbose_name=self.fields[key].verbose_name,
-                        message=error.message,
-                    )
-                    validation_errors.append(message)
+                    validation_errors.append(error.message)
                     field_object.reset()
                     continue
 
@@ -125,10 +141,10 @@ class BaseSerializer(object):
             try:
                 self.row_extra_validation(row_index, cleaned_row)
             except exceptions.ValidationError as error:
-                message = BASE_MESSAGE.format(
+                message = error_trans(
                     index=row_index + 1,
                     verbose_name='',
-                    error=error.message,
+                    message=error.message
                 )
                 validation_errors.append(message)
                 continue
@@ -207,7 +223,4 @@ class ExcelSerializer(BaseSerializer):
     def gen_error(self, index, error):
         # + 1 to make it equal to sheet index
         sheet_index = self.start_index + index + 1
-        return '[Row {sheet_index}] {error}'.format(
-            sheet_index=sheet_index,
-            error=error
-        )
+        return _('[Row %(index)s] %(error)s') % {'index': sheet_index, 'error': error}
