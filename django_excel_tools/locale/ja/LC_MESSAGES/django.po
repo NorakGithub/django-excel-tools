@@ -21,50 +21,50 @@ msgstr ""
 # Example: [Row 5] Shop Name is not allow to be blank.
 #: fields.py:41
 msgid "is not allow to be blank."
-msgstr ""
+msgstr "が空欄です。ご記入ください。"
 
 # Example: [Row 5] Active true is not correct, it must has one of these Yes, No.
 #: fields.py:86
 #, python-format
 msgid "%(value)s is not correct, it must has one of these %(choices)s."
-msgstr ""
+msgstr "%(value)s が間違っています。%(choices)s から選択してください。"
 
 # Example: [Row 5] 10/10/2018 is incorrect format, it should be YYYY-MM-DD.
 #: fields.py:125
 #, python-format
 msgid ""
 "\"%(value)s\" is incorrect format, it should be \"%(date_format_verbose)s\"."
-msgstr ""
+msgstr "\"%(value)s\"が間違っています。 \"%(date_format_verbose)s\"の形式にご修正ください。"
 
 #: fields.py:164
 msgid "must be text."
-msgstr ""
+msgstr "テキスト形式でご入力ください。"
 
 #: fields.py:175
 #, python-format
 msgid "cannot be more than %(length)s character."
-msgstr ""
+msgstr "文字数がオーバーしています。%(length)s以内に短縮してください。"
 
 # Example: [Row 5] Price cannot convert ABC to number.
 #: fields.py:195
 #, python-format
 msgid "cannot convert %(value)s to number."
-msgstr ""
+msgstr "%(value)s を番号に変換できません"
 
 #: serializers.py:103
 #, python-format
 msgid ""
 "This import required %(required_num)s columns but excel only has "
 "%(excel_num)s columns."
-msgstr ""
+msgstr "インポートに必要な項目数は%(required_num)sですが、エクセルファイルの項目数は、%(excel_num)sです。ご確認ください。"
 
 # Example: [Row 5] unexpected error.
 #: serializers.py:226
 #, python-format
 msgid "[Row %(index)s] %(error)s"
-msgstr ""
+msgstr "[%(index)s行目] %(error)s"
 
 #: utils.py:11
 #, python-format
 msgid "[Row %(index)s] %(verbose_name)s %(msg)s"
-msgstr ""
+msgstr "[%(index)s行目] %(verbose_name)s %(msg)s"
