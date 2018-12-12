@@ -27,14 +27,14 @@ msgstr "が空欄です。ご記入ください。"
 #: fields.py:86
 #, python-format
 msgid "%(value)s is not correct, it must has one of these %(choices)s."
-msgstr "入力値が間違っています。%(choices)s から選択してください。"
+msgstr "%(value)s が間違っています。%(choices)s から選択してください。"
 
 # Example: [Row 5] 10/10/2018 is incorrect format, it should be YYYY-MM-DD.
 #: fields.py:125
 #, python-format
 msgid ""
 "\"%(value)s\" is incorrect format, it should be \"%(date_format_verbose)s\"."
-msgstr "日付の入力値が間違っています。 \"%(date_format_verbose)s\"の形式にご修正ください。"
+msgstr "\"%(value)s\"が間違っています。 \"%(date_format_verbose)s\"の形式にご修正ください。"
 
 #: fields.py:164
 msgid "must be text."
@@ -49,7 +49,7 @@ msgstr "文字数がオーバーしています。%(length)s以内に短縮し�
 #: fields.py:195
 #, python-format
 msgid "cannot convert %(value)s to number."
-msgstr "入力値を"
+msgstr "%(value)s を番号に変換できません"
 
 #: serializers.py:103
 #, python-format
