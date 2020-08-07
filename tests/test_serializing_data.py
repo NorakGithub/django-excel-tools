@@ -75,7 +75,7 @@ class TestExpectedResult(unittest.TestCase):
         ])
         worksheet.append([
             'Shop B', '170707-001-00000-1', '2017-07-08', '1000',
-            datetime.date(2017, 1, 1), '201802', 0, u'無', None, '', 'No'
+            datetime.datetime(2017, 1, 1), '201802', 0, u'無', None, '', 'No'
         ])
         worksheet.append(['', '', '', ''])
         self.serializer = OrderExcelSerializer(worksheet)
