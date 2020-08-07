@@ -1,6 +1,12 @@
 from .exceptions import SerializerConfigError
 try:
-    from django.utils.translation import ugettext as _
+    import django
+
+    major, feature, minor, a, b = django.VERSION
+    if major >= 2:
+        from django.utils.translation import gettext as _
+    else:
+        from django.utils.translation import ugettext as _
 except ImportError:
     raise SerializerConfigError('Django is required. Please make sure you '
                                 'have install via pip.')

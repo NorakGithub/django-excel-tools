@@ -11,7 +11,13 @@ from django_excel_tools.fields import (
 from django_excel_tools.utils import error_trans
 
 try:
-    from django.utils.translation import ugettext as _
+    import django
+
+    major, feature, minor, a, b = django.VERSION
+    if major >= 2:
+        from django.utils.translation import gettext as _
+    else:
+        from django.utils.translation import ugettext as _
 except ImportError:
     raise exceptions.SerializerConfigError(
         'Django is required. Please make sure you have install via pip.'
@@ -158,7 +164,13 @@ class BaseSerializer(object):
         for index, cell in enumerate(row):
             if index + 1 > max_column:
                 break
-            if cell.value in [None, u'', '']:
+            if cell.value is None:
+                none_cell.append(cell)
+                continue
+            if isinstance(cell.value, str) and not cell.value.strip():
+                none_cell.append(cell)
+                continue
+            if not cell.value:
                 none_cell.append(cell)
         return len(none_cell) >= max_column
 
