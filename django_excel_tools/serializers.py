@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import logging
+import sys
 from collections import OrderedDict
 
 from django_excel_tools import exceptions
@@ -167,7 +168,12 @@ class BaseSerializer(object):
             if cell.value is None:
                 none_cell.append(cell)
                 continue
-            if isinstance(cell.value, str) and not cell.value.strip():
+
+            if sys.version_info < (3, 0):
+                is_string = isinstance(cell.value, unicode)
+            else:
+                is_string = isinstance(cell.value, str)
+            if is_string and not cell.value.strip():
                 none_cell.append(cell)
                 continue
             if not cell.value:
