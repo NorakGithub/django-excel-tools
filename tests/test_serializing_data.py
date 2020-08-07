@@ -75,14 +75,16 @@ class TestExpectedResult(unittest.TestCase):
         ])
         worksheet.append([
             'Shop B', '170707-001-00000-1', '2017-07-08', '1000',
-            datetime.date(2017, 1, 1), '201802', 0, u'無', None, '', 'No'
+            datetime.datetime(2017, 1, 1), '201802', 0, u'無', None, '', 'No'
         ])
-        worksheet.append(['', '', '', ''])
+        worksheet.append(['   ', '', '', '', '', '', '', '', '', '', ''])
+        worksheet.append(['', '', '', '', '', '', '', '', '', '', ''])
         self.serializer = OrderExcelSerializer(worksheet)
 
     def test_result(self):
         self.assertEqual(self.serializer.validation_errors, [], self.serializer.validation_errors)
         data = self.serializer.cleaned_data
+        self.assertEqual(len(self.serializer.cleaned_data), 2)
         first_row = data[0]
         self.assertEqual(first_row['shop_name'], 'Shop A')
         self.assertEqual(first_row['quantity'], 100)
