@@ -135,7 +135,11 @@ class BaseSerializer(object):
                     if extra_clean_value is not None:
                         field_object.cleaned_value = extra_clean_value
                 except exceptions.ValidationError as error:
-                    validation_errors.append(error.message)
+                    message = _('[Row %(index)s] %(error)s') % {
+                        'index': row_index + 1,
+                        'error': error.message
+                    }
+                    validation_errors.append(message)
                     field_object.reset()
                     continue
 
