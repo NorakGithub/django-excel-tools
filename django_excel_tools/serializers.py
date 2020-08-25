@@ -131,6 +131,12 @@ class BaseSerializer(object):
                 field_object.value = cell.value
                 try:
                     field_object.validate(index=row_index + 1)
+                except exceptions.ValidationError as error:
+                    validation_errors.append(error.message)
+                    field_object.reset()
+                    continue
+
+                try:
                     extra_clean_value = self._extra_clean_validate(key)
                     if extra_clean_value is not None:
                         field_object.cleaned_value = extra_clean_value
