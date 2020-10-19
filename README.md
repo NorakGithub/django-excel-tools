@@ -130,7 +130,7 @@ class StaffExcelSerializer(serializers.ExcelSerializer)
         blank=True,
         date_format='%Y-%m-%d',
         date_format_verbose='YYYY-MM-DD',
-        verbose='Date of Birth'
+        verbose_name='Date of Birth'
     )
 
     class Meta:
@@ -174,7 +174,7 @@ class StaffExcelSerializer(serializers.ExcelSerializer)
             try:
                 Staff.objects.create(**row)
             except Exception as e:
-                self.operation_error.append(self.gen_error(index, str(e)))
+                self.operation_errors.append(self.gen_error(index, str(e)))
                 continue
 ```
 
@@ -191,7 +191,7 @@ def import_view(request):
     if serializer.validation_errors:
         return Response(data=serializer.validation_errors, status=400)
     if serializer.operation_errors:
-        return Response(data=serializer.operation_errors, status=400
+        return Response(data=serializer.operation_errors, status=400)
     return Response(status=201)
 ```
 
