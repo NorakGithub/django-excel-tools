@@ -16,7 +16,7 @@ setup(
     author_email='khath.khemanorak@gmail.com',
     url='https://github.com/NorakGithub/django-excel-tools',
     name='django_excel_tools',
-    version_format='{tag}',
+    version='{RELEASE_VERSION}',
     description="Common function when working with excel.",
     long_description=readme + '\n\n' + changelog,
     long_description_content_type='text/markdown',
