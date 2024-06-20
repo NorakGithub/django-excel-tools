@@ -21,7 +21,7 @@ msgstr ""
 # Example: [Row 5] Shop Name is not allow to be blank.
 #: django_excel_tools/fields.py:46
 msgid "is not allow to be blank."
-msgstr "ไม่อนุญาติให้เว้นว่าง"
+msgstr "ไม่อนุญาตให้เว้นว่าง"
 
 # Example: [Row 5] Active true is not correct, it must has one of these Yes, No.
 #: django_excel_tools/fields.py:91
